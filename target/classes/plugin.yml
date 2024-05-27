@@ -1,5 +1,5 @@
 name: TownProtection
-version: '${project.version}'
+version: '1.0'
 main: com.townprotection.TownProtection
 api-version: '1.20'
 
