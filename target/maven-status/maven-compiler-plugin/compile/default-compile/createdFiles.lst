@@ -1,0 +1,12 @@
+com\townprotection\CommandRun\MainCommand.class
+com\townprotection\Listener\BlockBreakListener.class
+com\townprotection\Selector\Selector.class
+com\townprotection\Useful.class
+com\townprotection\Data\SelectorData\SelectorData.class
+com\townprotection\TownProtection.class
+com\townprotection\Selector\GiveSelector.class
+com\townprotection\Data\MarkData\SelectorMarkData.class
+com\townprotection\System\LocationRunnableSystem.class
+com\townprotection\Data\MainData.class
+com\townprotection\Listener\Listener.class
+com\townprotection\System\LocationRunnableSystem$LocationRunnable.class
