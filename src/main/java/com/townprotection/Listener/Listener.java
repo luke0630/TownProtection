@@ -4,6 +4,11 @@ import com.townprotection.Data.MainData;
 import com.townprotection.Data.SelectorData.SelectorData;
 import com.townprotection.Selector.GiveSelector;
 import com.townprotection.Selector.Selector;
+import com.townprotection.System.LocationRunnableSystem;
+import com.townprotection.TownProtection;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
@@ -28,10 +33,9 @@ public class Listener implements org.bukkit.event.Listener {
             if (event.getClickedBlock() == null) return;
             if (!event.getClickedBlock().getType().isAir()) {
                 var location = event.getClickedBlock().getLocation();
-                var locData = new SelectorData();
-
-                if (MainData.playerSelectData.containsKey(player)) {
-                    locData = MainData.playerSelectData.get(player);
+                var locData =  MainData.playerSelectData.get(player);
+                if (locData == null) {
+                    locData = new SelectorData();
                 }
 
                 if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
@@ -43,19 +47,19 @@ public class Listener implements org.bukkit.event.Listener {
                     locData.endBlock = location;
                     player.sendMessage(message + toColor("&d&l終了地点を設定しました。&f&l" + getXYZMessage(location)));
                 }
+
+                MainData.playerSelectData.put(player, locData);
                 if(locData.startBlock != null && locData.endBlock != null) {
                     if(Selector.schedulers.containsKey(player)) {
                         for(var schedule : Selector.schedulers.get(player)) {
                             schedule.cancel();
                         }
                     }
-                    Selector.getRange(player, locData, null);
+                    //パーティクルを表示する
+                    Selector.getRange(player, locData, Color.AQUA);
                 }
-                MainData.playerSelectData.put(player, locData);
                 event.setCancelled(true);
             }
         }
     }
-
-
 }

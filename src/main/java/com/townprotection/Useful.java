@@ -31,6 +31,6 @@ public class Useful {
     }
 
     public static String getXYZMessage(Location location) {
-        return toColor("X: "+location.getBlockX() + " Y: " + location.getBlockY() + " Z: " + location.getBlockZ());
+        return toColor("&c&lX: "+location.getBlockX() + " Y: " + location.getBlockY() + " Z: " + location.getBlockZ());
     }
 }
