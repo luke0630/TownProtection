@@ -1,14 +1,13 @@
 package com.townprotection;
+
 import com.townprotection.CommandRun.MainCommand;
-import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Listener.BlockBreakListener;
 import com.townprotection.Listener.Listener;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import static com.townprotection.Data.MainData.markData;
-import static com.townprotection.Useful.*;
+import java.util.Objects;
+
+import static com.townprotection.Useful.toColor;
 
 public final class TownProtection extends JavaPlugin {
 
@@ -19,7 +18,7 @@ public final class TownProtection extends JavaPlugin {
     public void onEnable() {
         instance = this;
         var command = getCommand("townprotection");
-        command.setExecutor(new MainCommand());
+        Objects.requireNonNull(command).setExecutor(new MainCommand());
 
         getServer().getPluginManager().registerEvents(new Listener(), this);
         getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);

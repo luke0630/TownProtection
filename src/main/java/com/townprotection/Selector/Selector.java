@@ -1,21 +1,20 @@
 package com.townprotection.Selector;
 
-import com.townprotection.Data.MainData;
 import com.townprotection.Data.SelectorData.SelectorData;
-import com.townprotection.System.LocationRunnableSystem;
 import com.townprotection.TownProtection;
 import com.townprotection.Useful;
-import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class Selector {
@@ -47,27 +46,27 @@ public class Selector {
                 if (player != null) {
                     boolean b = i == Math.abs(xDifference) - 1 && a == Math.abs(zDifference) - 1;
                     if (i == 0 && a == 0) {
-                        DrawParticleBlock(current, player, color, true);
+                        DrawParticleBlock(current, player, color);
                     } else if (i == Math.abs(xDifference) - 1 && a == 0) {
-                        DrawParticleBlock(current, player, color, true);
+                        DrawParticleBlock(current, player, color);
                     }
                     if (i != 0 && a == 0) {
-                        DrawParticleBlock(current, player, color, false);
+                        DrawParticleBlock(current, player, color);
                     }
                     if (i == Math.abs(xDifference) - 1) {
-                        DrawParticleBlock(current, player, color, false);
+                        DrawParticleBlock(current, player, color);
                     }
                     if (i == 0) {
-                        DrawParticleBlock(current, player, color, false);
+                        DrawParticleBlock(current, player, color);
                     }
                     if (a == Math.abs(zDifference) - 1) {
-                        DrawParticleBlock(current, player, color, false);
+                        DrawParticleBlock(current, player, color);
                     }
 
                     if (i == 0 && a == Math.abs(zDifference) - 1) {
-                        DrawParticleBlock(current, player, color, true);
+                        DrawParticleBlock(current, player, color);
                     } else if (b) {
-                        DrawParticleBlock(current, player, color, true);
+                        DrawParticleBlock(current, player, color);
                     }
                 }
 
@@ -80,7 +79,7 @@ public class Selector {
     }
 
     // エッジのブロックを判定するヘルパーメソッド
-    private static boolean isEdgeBlock(Location location, int xDifference, int zDifference, Location start, Location end) {
+    /*private static boolean isEdgeBlock(Location location, int xDifference, int zDifference, Location start, Location end) {
         int x = location.getBlockX();
         int z = location.getBlockZ();
         int xStart = Math.min(start.getBlockX(), end.getBlockX());
@@ -89,9 +88,9 @@ public class Selector {
         int zEnd = Math.max(start.getBlockZ(), end.getBlockZ());
 
         return (x == xStart || x == xEnd) || (z == zStart || z == zEnd);
-    }
+    }*/
 
-    static void DrawParticleBlock(Location start, Player player,Color color, boolean includeHigh) {
+    static void DrawParticleBlock(Location start, Player player,Color color) {
         if(color == null) {
             return;
         }
@@ -102,28 +101,20 @@ public class Selector {
         Vector basisZ = new Vector(0, 0, 1);
 
         var task = Bukkit.getScheduler().runTaskTimerAsynchronously(TownProtection.instance, () -> {
-            drawParticle(basisY, offset.clone().toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisY, offset.clone().add(basisX).toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisY, offset.clone().add(basisX).add(basisZ).toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisY, offset.clone().add(basisZ).toLocation(start.getWorld()), SPACE, color);
+            drawParticle(basisY, offset.clone().toLocation(start.getWorld()), color);
+            drawParticle(basisY, offset.clone().add(basisX).toLocation(start.getWorld()), color);
+            drawParticle(basisY, offset.clone().add(basisX).add(basisZ).toLocation(start.getWorld()), color);
+            drawParticle(basisY, offset.clone().add(basisZ).toLocation(start.getWorld()), color);
 
-            drawParticle(basisX, offset.clone().toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisX, offset.clone().add(basisY).toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisX, offset.clone().add(basisZ).toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisX, offset.clone().add(basisY).add(basisZ).toLocation(start.getWorld()), SPACE, color);
+            drawParticle(basisX, offset.clone().toLocation(start.getWorld()), color);
+            drawParticle(basisX, offset.clone().add(basisY).toLocation(start.getWorld()), color);
+            drawParticle(basisX, offset.clone().add(basisZ).toLocation(start.getWorld()), color);
+            drawParticle(basisX, offset.clone().add(basisY).add(basisZ).toLocation(start.getWorld()), color);
 
-            drawParticle(basisZ, offset.clone().toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisZ, offset.clone().add(basisX).toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisZ, offset.clone().add(basisY).toLocation(start.getWorld()), SPACE, color);
-            drawParticle(basisZ, offset.clone().add(basisY).add(basisX).toLocation(start.getWorld()), SPACE, color);
-
-            // Optional: Draw particles above the block
-            if(includeHigh) {
-                /*drawParticle(new Vector(0, 4, 0), offset.clone().toLocation(start.getWorld()), 0.15, color);
-                drawParticle(new Vector(0, 4, 0), offset.clone().add(basisZ).toLocation(start.getWorld()), 0.15, color);
-                drawParticle(new Vector(0, 4, 0), offset.clone().add(basisX).toLocation(start.getWorld()), 0.15, color);
-                drawParticle(new Vector(0, 4, 0), offset.clone().add(basisX).add(basisZ).toLocation(start.getWorld()), 0.15, color);*/
-            }
+            drawParticle(basisZ, offset.clone().toLocation(start.getWorld()), color);
+            drawParticle(basisZ, offset.clone().add(basisX).toLocation(start.getWorld()), color);
+            drawParticle(basisZ, offset.clone().add(basisY).toLocation(start.getWorld()), color);
+            drawParticle(basisZ, offset.clone().add(basisY).add(basisX).toLocation(start.getWorld()), color);
         }, 0L, 15L);
 
         if (schedulers.containsKey(player)) {
@@ -135,9 +126,9 @@ public class Selector {
         }
     }
     static final double SPACE = 0.34f;
-    private static void drawParticle(Vector toDraw, Location offset, double space,Color color) {
+    private static void drawParticle(Vector toDraw, Location offset, Color color) {
 
-        for(double d=0; d<=toDraw.length(); d+=space) {
+        for(double d=0; d<=toDraw.length(); d+= Selector.SPACE) {
             Location toSpawn = offset.clone().add(toDraw.clone().multiply(d));
             toSpawn.getWorld().spawnParticle(Particle.REDSTONE, toSpawn, 2, 0, 0, 0, 0, new Particle.DustOptions(color  , 0.7f),true);
         }

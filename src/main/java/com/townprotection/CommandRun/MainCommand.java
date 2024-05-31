@@ -1,30 +1,21 @@
 package com.townprotection.CommandRun;
 
-import com.townprotection.Data.MainData;
 import com.townprotection.Data.MarkData.ActionList;
 import com.townprotection.Data.MarkData.SelectorMarkData;
-import com.townprotection.Data.SelectorData.SelectorData;
 import com.townprotection.Selector.GiveSelector;
-import com.townprotection.Selector.Selector;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
-import static com.townprotection.Selector.Selector.schedulers;
-import static com.townprotection.TownProtection.*;
-import static com.townprotection.Data.MainData.*;
-import static com.townprotection.Useful.*;
+import static com.townprotection.Data.MainData.markData;
+import static com.townprotection.Data.MainData.playerSelectData;
 
 public class MainCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-        if(command.getName().equalsIgnoreCase("townprotection"))
+        if(!command.getName().equalsIgnoreCase("townprotection")) return false;
         if(commandSender instanceof Player player) {
 
             if(strings[0].equalsIgnoreCase("wand")) {
