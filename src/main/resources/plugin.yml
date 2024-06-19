@@ -2,7 +2,8 @@ name: TownProtection
 version: '${project.version}'
 main: com.townprotection.TownProtection
 api-version: '1.20'
-
+depend: [ProtocolLib, PlaceholderAPI]
 commands:
   townprotection:
+    aliases: tw
 

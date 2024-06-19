@@ -1,16 +1,23 @@
 package com.townprotection.Listener;
 
-import com.townprotection.Data.MainData;
 import com.townprotection.Data.SelectorData.SelectorData;
 import com.townprotection.Selector.GiveSelector;
 import com.townprotection.Selector.Selector;
+import com.townprotection.System.RunnableSystem;
+import com.townprotection.TownProtection;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
+import static com.townprotection.Data.MainData.*;
 import static com.townprotection.TownProtection.message;
 import static com.townprotection.Useful.getXYZMessage;
 import static com.townprotection.Useful.toColor;
@@ -29,7 +36,7 @@ public class Listener implements org.bukkit.event.Listener {
             if (event.getClickedBlock() == null) return;
             if (!event.getClickedBlock().getType().isAir()) {
                 var location = event.getClickedBlock().getLocation();
-                var locData =  MainData.playerSelectData.get(player);
+                var locData = playerSelectData.get(player);
                 if (locData == null) {
                     locData = new SelectorData();
                 }
@@ -44,7 +51,7 @@ public class Listener implements org.bukkit.event.Listener {
                     player.sendMessage(message + toColor("&d&l終了地点を設定しました。&f&l" + getXYZMessage(location)));
                 }
 
-                MainData.playerSelectData.put(player, locData);
+                playerSelectData.put(player, locData);
                 if(locData.startBlock != null && locData.endBlock != null) {
                     if(Selector.schedulers.containsKey(player)) {
                         for(var schedule : Selector.schedulers.get(player)) {
@@ -58,4 +65,28 @@ public class Listener implements org.bukkit.event.Listener {
             }
         }
     }
+
+    @EventHandler
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
+        var player = event.getPlayer();
+        RunnableSystem.Runnable data = setNameRunnable.get(player);
+        if(data != null) {
+            setNameRunnable.remove(player);
+            Bukkit.getScheduler().runTask(TownProtection.instance, () -> data.run(event.getMessage()));
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onCloseInventory(InventoryCloseEvent event) {
+        var player = (Player) event.getPlayer();
+        playerOpenGUI.remove(player);
+    }
+
+    @EventHandler
+    public void onQuitPlayer(PlayerQuitEvent event) {
+        var player = event.getPlayer();
+        playerOpenGUI.remove(player);
+    }
+
 }
