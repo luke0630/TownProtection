@@ -4,13 +4,10 @@ import com.townprotection.Data.MainData;
 import com.townprotection.Data.MarkData.ActionList;
 import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.Data.SelectorData.SelectorData;
-import com.townprotection.Selector.GiveSelector;
 import com.townprotection.Selector.Selector;
 import com.townprotection.TownProtection;
 import com.townprotection.Useful;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -62,8 +59,8 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
                 } else {
                     if(player != null && !TownProtection.IsTownAdmin(player, town)) {
                         player.sendMessage(TownProtection.message + toColor("&c&l町の変更は許可されません。"));
+                        callback.run();
                     }
-                    callback.run();
                 }
             }
         }
@@ -133,9 +130,7 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
         var player = event.getPlayer();
         var action = event.getAction();
         if(event.getClickedBlock() == null) return;
-        if(player.getInventory().getItemInMainHand().getType() == Material.WOODEN_PICKAXE) {
-            if (player.getInventory().getItemInMainHand().getLore().get(0).equalsIgnoreCase(GiveSelector.SELECTOR_LORE)) return;
-        }
+        if(Selector.IsSelectorTool(player)) return;
         if(action == Action.RIGHT_CLICK_BLOCK) {
             var blockLoc = event.getClickedBlock().getLocation();
             Checker(player, blockLoc, PLACE_BLOCK, () -> event.setCancelled(true));
@@ -144,41 +139,14 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
         if(action == LEFT_CLICK_BLOCK) {
             var blockLoc = event.getClickedBlock().getLocation();
             Checker(player, blockLoc, BREAK_BLOCK, () -> event.setCancelled(true));
-
-            var clickBlock = event.getClickedBlock();
-            var denyType = new Material[]{
-                    Material.CHEST,
-                    Material.TRAPPED_CHEST,
-                    Material.HOPPER,
-
-            };
-            //Checker(player, blockLoc, PLAYER_INTERACT, () -> event.setCancelled(true));
         }
     }
-    //TNTなど
-    /*@EventHandler
-    public void onEntityExplodeEvent(EntityExplodeEvent event) {
-        var locList = event.blockList();
-        for(var loc : locList) {
-            Checker(null, loc.getLocation(), ENTITY_EXPLODE, () -> event.blockList().clear());
-        }
-    }*/
-
-    /*@EventHandler
-    public void onExplosionPrime(ExplosionPrimeEvent event) {
-        var entity = event.getEntity();
-        Checker(null, entity.getLocation(), ENTITY_EXPLODE, () -> event.setCancelled(true));
-    }*/
 
     @EventHandler
     public void onExplostionTNT(EntityExplodeEvent event) {
-        var blocks = event.blockList();
-        var player = Bukkit.getPlayer("Luke0630");
-
         Iterator<Block> iterator = event.blockList().iterator();
 
         while (iterator.hasNext()) {
-            player.sendMessage(String.valueOf(event.blockList().size()));
             var block = iterator.next();
 
             var townData = Selector.getTownFromLocation(block.getLocation());

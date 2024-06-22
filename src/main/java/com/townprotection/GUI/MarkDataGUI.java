@@ -17,6 +17,12 @@ public class MarkDataGUI {
         var item = getItem(Material.OAK_LOG, markData.displayName);
         var changeMarkName = getItem(Material.NAME_TAG, "&a&l土地の名前を変更する");
 
+        var teleportTown = getItem(Material.COMPASS, "テレポートする");
+        setLore(teleportTown, List.of(
+                "&c&lスペクテイターである必要があります。"
+        ));
+        inv.setItem(9*2+8, teleportTown);
+
         var owner = getPlayerHead( markData.owner );
         var allowedPlayers = getItem(Material.REDSTONE, "&9&l許可者リスト");
         var manager = getItem(Material.REDSTONE_LAMP, "&6&l管理者リスト");

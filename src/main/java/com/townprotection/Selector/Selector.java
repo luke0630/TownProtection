@@ -5,10 +5,12 @@ import com.comphenix.protocol.ProtocolManager;
 import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.Data.SelectorData.SelectorData;
+import com.townprotection.System.RunnableSystem;
 import com.townprotection.TownProtection;
 import com.townprotection.Useful;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
@@ -17,10 +19,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.townprotection.Data.MainData.*;
+import static com.townprotection.Data.MainData.townMarkData;
 
 
 public class Selector {
+    public static boolean IsSelectorToolWithItem(ItemStack itemStack) {
+        if(itemStack.getType() == Material.WOODEN_PICKAXE) {
+            if(itemStack.getLore() == null) return false;
+            if (itemStack.getLore().get(0).equalsIgnoreCase(GiveSelector.SELECTOR_LORE)) return true;
+        }
+        return false;
+    }
+
+    public static boolean IsSelectorTool(Player player) {
+        if(IsSelectorToolWithItem(player.getInventory().getItemInMainHand())) {
+            return true;
+        }
+        return false;
+    }
     public static Map<Player, List<BukkitTask>> schedulers = new HashMap<>();
     public static boolean getRange(Player player, SelectorData data, Color color) {
         var start = data.startBlock;
@@ -32,7 +48,19 @@ public class Selector {
         if (totalBlock >= 1000 && player != null) {
             player.sendActionBar(Useful.toColor("&c&l1000ブロック以上なため、パーティクルの表示はできません。(高負荷を防ぐため)"));
             return false;
+        } else {
+            showRange(player, data, (Object object) -> {
+                if(object instanceof Location location) {
+                    DrawParticleBlock(location, player, color);
+                }
+            });
         }
+        return true;
+    }
+
+    public static void showRange(Player player, SelectorData data, RunnableSystem.Runnable runnable) {
+        var start = data.startBlock;
+        var end = data.endBlock;
 
         var xDifference = start.getBlockX() - end.getBlockX();
         xDifference += (int) Math.signum(xDifference);
@@ -53,10 +81,9 @@ public class Selector {
         for(int a=0;a < Math.abs(zDifference);a++) {
             for (int i = 0; i < Math.abs(xDifference); i++) {
                 current.setX(current.getBlockX());
-
                 if (player != null) {
                     if(isEdgeBlock(current, start,end)) {
-                        DrawParticleBlock(current, player, color);
+                        runnable.run(current);
                     }
                 }
 
@@ -66,7 +93,6 @@ public class Selector {
             current.setX(start.getBlockX());
             current.setZ(current.getBlockZ() + (-1) * Math.signum(zDifference));
         }
-        return true;
     }
 
     // エッジのブロックを判定するヘルパーメソッド

@@ -4,11 +4,13 @@ import com.townprotection.Data.MainData;
 import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.Listener.OriginalListener.PlayerEnterTown;
+import com.townprotection.Listener.OriginalListener.PlayerExitTown;
 import com.townprotection.Selector.Selector;
 import com.townprotection.System.RunnableSystem;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ public class CallBackListener implements Listener {
 
     public void Initialization() {
         OnPlayerEnterTown();
+        OnPlayerExitTown();
     }
 
     public void UpdateEffect() {
@@ -70,12 +73,38 @@ public class CallBackListener implements Listener {
                         playerEnterTown.put(event.player, town);
                         run(event);
                     }
-                } else {
-                    playerEnterTown.remove(event.player);
                 }
             }
         });
     }
+    public void OnPlayerExitTown() {
+        AddCallBack((Object e) -> {
+            if(e instanceof PlayerMoveEvent moveEvent) {
+                var player = moveEvent.getPlayer();
+                if(playerEnterTown.containsKey(player)) {
+                    var townData = playerEnterTown.get(player);
+                    var loc = moveEvent.getTo();
+                    var currentTownData = Selector.getTownFromLocation(loc);
+                    if(currentTownData == null || townData != currentTownData) {
+                        //町から出ました
+                        var newData = new PlayerExitTown();
+                        newData.player = player;
+                        newData.previousTownData = townData;
+
+                        playerEnterTown.remove(player);
+
+                        run(newData);
+                    }
+                }
+            }
+        });
+    }
+
+    @EventHandler
+    public void OnPlayerItemHeldEvent(PlayerItemHeldEvent event) {
+        run(event);
+    }
+
     @EventHandler
     public void OnPlayerMoving(PlayerMoveEvent event) {
         run(event);

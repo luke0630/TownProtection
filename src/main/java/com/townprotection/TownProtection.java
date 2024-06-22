@@ -1,16 +1,22 @@
 package com.townprotection;
 
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import com.townprotection.CommandRun.MainCommand;
 import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Data.MarkData.TownData;
+import com.townprotection.Data.SelectorData.SelectorData;
 import com.townprotection.Listener.BlockBreakListener;
 import com.townprotection.Listener.CallBackListener;
 import com.townprotection.Listener.GUIListener.MainGUIListener;
 import com.townprotection.Listener.Listener;
 import com.townprotection.PlaceholderAPISystem.TownProtectionExpansion;
+import com.townprotection.Range.ShowRangeWhenEnter;
 import com.townprotection.Selector.Selector;
 import com.townprotection.System.SaveLoad;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.GameMode;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,7 +24,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.Objects;
 
-import static com.townprotection.Data.MainData.*;
+import static com.townprotection.Data.MainData.playerSelectData;
+import static com.townprotection.Data.MainData.townMarkData;
 import static com.townprotection.Useful.toColor;
 
 public final class TownProtection extends JavaPlugin {
@@ -30,6 +37,8 @@ public final class TownProtection extends JavaPlugin {
     public File configFile;
     public YamlConfiguration configData;
 
+    private static ProtocolManager protocolManager;
+
     @Override
     public void onEnable() {
 
@@ -38,8 +47,16 @@ public final class TownProtection extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
+        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") == null) {
+            getLogger().warning("Could not find ProtocolLib! This plugin is required.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
         new TownProtectionExpansion().register(); //
+        protocolManager = ProtocolLibrary.getProtocolManager();
+
+        var player = Bukkit.getPlayer("Luke0630");
 
         instance = this;
         manager = new ApiManager();
@@ -60,6 +77,7 @@ public final class TownProtection extends JavaPlugin {
         new SaveLoad().MakeFile();
         new CallBackListener().Initialization();
         new CallBackListener().UpdateEffect();
+        ShowRangeWhenEnter.Initialization();
     }
 
     public static void Save() {
@@ -68,6 +86,12 @@ public final class TownProtection extends JavaPlugin {
 
     @Override
     public void onDisable() {
+    }
+
+
+
+    public static ProtocolManager getProtocolManager() {
+        return protocolManager;
     }
 
     public static Boolean AddTown(Player player) {
@@ -153,7 +177,17 @@ public final class TownProtection extends JavaPlugin {
         }
         return false;
     }
+
+    public static void TeleportSelectorData(Player player, SelectorData data) {
+        if(player.getGameMode() == GameMode.SPECTATOR) {
+            Selector.getRange(player, data, Color.ORANGE);
+            player.sendMessage(message + "テレポートしました。");
+            var cloneData = data.clone();
+            cloneData.startBlock.setY(player.getY());
+            player.teleport(cloneData.startBlock);
+        } else {
+            player.sendMessage(message + toColor("&c&lスペクテイターモードではないためテレポート出来ませんでした。"));
+        }
+    }
+
 }
-
-
-

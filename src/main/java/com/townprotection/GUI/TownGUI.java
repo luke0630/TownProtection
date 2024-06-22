@@ -9,7 +9,6 @@ import org.bukkit.inventory.Inventory;
 
 import java.util.List;
 
-import static com.townprotection.TownProtection.instance;
 import static com.townprotection.Useful.*;
 
 public class TownGUI {
@@ -26,7 +25,18 @@ public class TownGUI {
 
 
         inv.setItem(0, getItem(Material.FEATHER, "&c&l戻る"));
-        inv.setItem(9+7, getItem(Material.PLAYER_HEAD, "&c&l市長: &f&l" + Bukkit.getOfflinePlayer(townData.townMayor).getName()));
+
+        var townMayorItem = getPlayerHead(townData.townMayor);
+        setLore(townMayorItem, List.of(
+                "&c&l市長: " + Bukkit.getOfflinePlayer(townData.townMayor)
+        ));
+        inv.setItem(9+7, townMayorItem);
+
+        var teleportTown = getItem(Material.COMPASS, "テレポートする");
+        setLore(teleportTown, List.of(
+                "&c&lスペクテイターである必要があります。"
+        ));
+        inv.setItem(9*2+8, teleportTown);
 
         if(TownProtection.IsTownAdmin(player, townData)) {
             inv.setItem(9+2, getItem(Material.OAK_LOG, "&c&l土地を管理"));

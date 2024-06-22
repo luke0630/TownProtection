@@ -61,11 +61,11 @@ public class MainGUIListener implements Listener {
             }
         }
         else if(gui == GuiManager.GUi.MARK_DATA_EDITOR) {
+            var guiData = (GUIData) playerOpenGUI.get(player).clone();
             if(slot == 0) {
                 GuiManager.openListGUI(player, GuiManager.ListGUIPreset.TOWN_MARKED_LIST);
             }
             if(slot == 9+1) {
-                var guiData = (GUIData) playerOpenGUI.get(player).clone();
                 String message = TownProtection.message + "新しい土地の名前をチャットに入力して送信してください。";
                 CallBackStringByChat.SetName(player, message, (Object s) -> {
                     if(s instanceof String result){
@@ -89,6 +89,9 @@ public class MainGUIListener implements Listener {
             }
             if(slot == 9+8) {
                 GuiManager.openListGUI(player, GuiManager.ListGUIPreset.TOWN_MARKED_MANAGER_LIST);
+            }
+            if(slot == 9*2+8) {
+                TeleportSelectorData(player, guiData.targetTownMarkData.selectorData);
             }
         }
         else if(gui == GuiManager.GUi.MARK_DATA_DELETE) {
@@ -151,6 +154,9 @@ public class MainGUIListener implements Listener {
             }
             if(slot == 9*2) {
                 openGUI(player, GuiManager.GUi.TOWN_DELETE_CONFIRM);
+            }
+            if(slot == 9*2+8) {
+                TeleportSelectorData(player, townData.rangeOfTown);
             }
         }
         else if(gui == GuiManager.GUi.TOWN_EFFECT_EDITOR) {

@@ -1,13 +1,11 @@
 package com.townprotection.Listener;
 
 import com.townprotection.Data.SelectorData.SelectorData;
-import com.townprotection.Selector.GiveSelector;
 import com.townprotection.Selector.Selector;
 import com.townprotection.System.RunnableSystem;
 import com.townprotection.TownProtection;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
@@ -29,10 +27,9 @@ public class Listener implements org.bukkit.event.Listener {
 
         if (event.getHand() != EquipmentSlot.HAND) return; //二度呼ばれないようにする対策
 
-        var wand = player.getInventory().getItemInMainHand();
-        if (wand.getType() == Material.AIR) return;
-        if (wand.getLore() == null) return;
-        if (wand.getLore().get(0).equalsIgnoreCase(GiveSelector.SELECTOR_LORE)) {
+
+        if(Selector.IsSelectorTool(player)) {
+            player.sendMessage("あああんで");
             if (event.getClickedBlock() == null) return;
             if (!event.getClickedBlock().getType().isAir()) {
                 var location = event.getClickedBlock().getLocation();
@@ -88,5 +85,4 @@ public class Listener implements org.bukkit.event.Listener {
         var player = event.getPlayer();
         playerOpenGUI.remove(player);
     }
-
 }

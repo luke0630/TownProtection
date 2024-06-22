@@ -5,6 +5,7 @@ C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\GUI\GuiManager.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Selector\Selector.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Listener\Listener.java
+C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Range\ShowRange.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Data\MarkData\SelectorMarkData.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Effect\EffectList\System\AbstractEffect.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Data\MainData.java
@@ -25,6 +26,8 @@ C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Useful.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\GUI\TownGUI.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\CommandRun\MainCommandTabComplete.java
+C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Listener\OriginalListener\PlayerExitTown.java
+C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Range\ShowRangeWhenEnter.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Data\PlayerListData\ShowListDataEnum.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\Listener\CallBackListener.java
 C:\Users\ryuto\IdeaProjects\New\TownProtection\src\main\java\com\townprotection\System\SaveLoad.java
