@@ -163,6 +163,7 @@ public final class TownProtection extends JavaPlugin {
         return true;
     }
 
+
     public static boolean IsTownAdmin(Player player, TownData town) {
         if (player.isOp() || town.townMayor.toString().equalsIgnoreCase(player.getUniqueId().toString()) || town.townManager.contains(player.getUniqueId())) return true;
         return false;
