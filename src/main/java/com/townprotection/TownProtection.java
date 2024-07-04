@@ -92,11 +92,6 @@ public final class TownProtection extends JavaPlugin {
     }
 
 
-
-    public static ProtocolManager getProtocolManager() {
-        return protocolManager;
-    }
-
     public static Boolean AddTown(Player player) {
         var data = playerSelectData.get(player);
         if(data == null) {
