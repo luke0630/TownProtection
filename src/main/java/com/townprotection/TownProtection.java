@@ -146,6 +146,8 @@ public final class TownProtection extends JavaPlugin {
         townMarkData.add(townData);
         player.sendMessage(message + townData.townName + " という名前で新たな町を追加しました！");
 
+        ShowTownAndMarked(player, townData, false);
+
         TownProtection.Save();
 
         player.closeInventory();
