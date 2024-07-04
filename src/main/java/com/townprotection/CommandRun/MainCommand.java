@@ -1,7 +1,6 @@
 package com.townprotection.CommandRun;
 
 import com.townprotection.Data.GUIData.GUIData;
-import com.townprotection.Data.MarkData.ActionList;
 import com.townprotection.GUI.GuiManager;
 import com.townprotection.Selector.GiveSelector;
 import com.townprotection.Selector.Selector;
@@ -13,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import static com.townprotection.Data.MainData.*;
+import static com.townprotection.Selector.Selector.*;
 import static com.townprotection.TownProtection.message;
 
 public class MainCommand implements CommandExecutor {
@@ -20,14 +20,25 @@ public class MainCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if(!command.getName().equalsIgnoreCase("townprotection")) return false;
         if(commandSender instanceof Player player) {
-
+            if(showModePlayer.contains(player)) {
+                if(strings.length == 0) {
+                    ShowMode(player);
+                } else if(!strings[0].equalsIgnoreCase("show")) {
+                    ShowMode(player);
+                }
+            }
             if(strings.length == 0) {
                 playerOpenGUI.put(player, new GUIData());
+                if(changeSelectorDataPlayer.containsKey(player)) {
+                    GuiManager.openGUI(player, GuiManager.GUi.APPLY_SELECTOR_DATA);
+                    return false;
+                }
                 GuiManager.openListGUI(player, GuiManager.ListGUIPreset.TOWN_LIST);
                 return false;
             }
             if(strings.length == 1) {
                 switch(strings[0]) {
+                    case "show" -> Selector.ShowMode(player);
                 }
             } else if(strings.length == 2) {
                 if(strings[0].equalsIgnoreCase("open")) {
@@ -38,7 +49,7 @@ public class MainCommand implements CommandExecutor {
                             }
                             playerOpenGUI.get(player).targetTownData = town;
                             GuiManager.openGUI(player, GuiManager.GUi.TOWN_EDITOR);
-                            break;
+                            return false;
                         }
                     }
                     player.sendMessage(message + strings[1] + " という町は存在しないため開けませんでした。");
@@ -51,9 +62,6 @@ public class MainCommand implements CommandExecutor {
                 new SaveLoad().SaveToConfig();
             }
             //******DEBUG******//
-            else if(strings[0].equalsIgnoreCase("test")) {
-                markData.get(0).allowActionList.add(ActionList.Action.PLAYER_BREAK_BLOCK);
-            }
             else if(strings[0].equalsIgnoreCase("deselect")) {
                 for (var scheduler : Selector.schedulers.get(player)) {
                     scheduler.cancel();
