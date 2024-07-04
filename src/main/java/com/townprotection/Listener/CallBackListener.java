@@ -10,6 +10,7 @@ import com.townprotection.System.RunnableSystem;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
@@ -57,7 +58,7 @@ public class CallBackListener implements Listener {
         AddCallBack((Object e) -> {
             if(e instanceof PlayerMoveEvent moveEvent) {
                 var event = new PlayerEnterTown();
-                var loc = moveEvent.getTo();
+                var loc = moveEvent.getPlayer().getLocation();
                 var town = Selector.getTownFromLocation(loc);
                 SelectorMarkData marked = null;
                 if(town != null) {
@@ -107,6 +108,11 @@ public class CallBackListener implements Listener {
 
     @EventHandler
     public void OnPlayerMoving(PlayerMoveEvent event) {
+        run(event);
+    }
+
+    @EventHandler
+    public void OnPlayerInteract(PlayerInteractEvent event) {
         run(event);
     }
 }
