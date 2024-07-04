@@ -28,6 +28,7 @@ com\townprotection\GUI\MarkDataGUI.class
 com\townprotection\Data\SelectorData\SelectorData.class
 com\townprotection\TownProtection.class
 com\townprotection\System\RunnableSystem.class
+com\townprotection\Selector\Selector$TownAndMarked.class
 com\townprotection\System\Interfaces$Effect.class
 com\townprotection\System\RunnableSystem$Runnable.class
 com\townprotection\Data\MarkData\TownData.class

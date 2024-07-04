@@ -55,6 +55,7 @@ public class MarkDataGUI {
             inv.setItem(9+2, allowList);
             inv.setItem(9+7, allowedPlayers);
             inv.setItem(9+8, manager);
+            inv.setItem(9*2+4, getItem(Material.WOODEN_PICKAXE, "&6&l範囲を変更する"));
         }
         inv.setItem(9+4, item);
         inv.setItem(9+6, owner);

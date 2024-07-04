@@ -6,7 +6,6 @@ import com.townprotection.GUI.GuiManager;
 import com.townprotection.Listener.CallBackListener;
 import com.townprotection.System.CallBackStringByChat;
 import com.townprotection.TownProtection;
-import com.townprotection.Useful;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -18,7 +17,13 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import static com.townprotection.Data.MainData.*;
 import static com.townprotection.GUI.GuiManager.openGUI;
 import static com.townprotection.GUI.GuiManager.openListGUI;
+import static com.townprotection.Range.ShowRange.RemoveParticle;
+import static com.townprotection.Range.ShowRange.RemoveShowRange;
+import static com.townprotection.Range.ShowRangeWhenEnter.ShowTownAndMarked;
+import static com.townprotection.Selector.Selector.*;
 import static com.townprotection.TownProtection.*;
+import static com.townprotection.Useful.HiddenActionBar;
+import static com.townprotection.Useful.toColor;
 
 public class MainGUIListener implements Listener {
     @EventHandler
@@ -60,6 +65,23 @@ public class MainGUIListener implements Listener {
                 openGUI(player, GuiManager.GUi.PLAYER_LIST);
             }
         }
+        else if(gui == GuiManager.GUi.APPLY_SELECTOR_DATA) {
+            if(slot == 0) {
+                player.closeInventory();
+            }
+            if(slot == 9+3) {
+                ApplyChangeSelector(player);
+            } else if(slot == 9+5) {
+                RemoveShowRange(player);
+                HiddenActionBar(player);
+                RemoveParticle(player);
+                ShowTownAndMarked(player, changeSelectorDataPlayer.get(player).getTownData(), false);
+                changeSelectorDataPlayer.remove(player);
+                playerSelectData.remove(player);
+                player.closeInventory();
+                player.sendMessage(toColor("&c選択範囲の変更をキャンセルしました。"));
+            }
+        }
         else if(gui == GuiManager.GUi.MARK_DATA_EDITOR) {
             var guiData = (GUIData) playerOpenGUI.get(player).clone();
             if(slot == 0) {
@@ -71,7 +93,7 @@ public class MainGUIListener implements Listener {
                     if(s instanceof String result){
                         if(IsAlreadyExistMarkedName(guiData.targetTownData, result)) {
                             //既に存在します
-                            player.sendMessage(TownProtection.message + result + Useful.toColor(" &c&lこの名前はすでに使われているため使用不可能です。"));
+                            player.sendMessage(TownProtection.message + result + toColor(" &c&lこの名前はすでに使われているため使用不可能です。"));
                         } else {
                             guiData.targetTownMarkData.displayName = result;
                             player.sendMessage(TownProtection.message + result + " に変更しました。");
@@ -92,6 +114,12 @@ public class MainGUIListener implements Listener {
             }
             if(slot == 9*2+8) {
                 TeleportSelectorData(player, guiData.targetTownMarkData.selectorData);
+            }
+            if(slot == 9*2) {
+                openGUI(player, GuiManager.GUi.MARK_DATA_DELETE);
+            }
+            if(slot == 9*2+4) {
+                ChangeMarkedDataSelector(player, guiData.targetTownMarkData);
             }
         }
         else if(gui == GuiManager.GUi.MARK_DATA_DELETE) {
@@ -133,7 +161,7 @@ public class MainGUIListener implements Listener {
                         if(s instanceof String result){
                             if(IsAlreadyExistTownName(result)) {
                                 //既に存在します
-                                player.sendMessage(TownProtection.message + result + Useful.toColor(" &c&lこの名前はすでに使われているため使用不可能です。"));
+                                player.sendMessage(TownProtection.message + result + toColor(" &c&lこの名前はすでに使われているため使用不可能です。"));
                             } else {
                                 guiData.targetTownData.townName = result;
                                 player.sendMessage(TownProtection.message + result + " に変更しました。");
@@ -154,6 +182,10 @@ public class MainGUIListener implements Listener {
             }
             if(slot == 9*2) {
                 openGUI(player, GuiManager.GUi.TOWN_DELETE_CONFIRM);
+            }
+            if(slot == 9*2+4) {
+                var currentOpenTown = playerOpenGUI.get(player).targetTownData;
+                ChangeTownSelectorData(player, currentOpenTown);
             }
             if(slot == 9*2+8) {
                 TeleportSelectorData(player, townData.rangeOfTown);
