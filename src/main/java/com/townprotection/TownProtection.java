@@ -109,12 +109,23 @@ public final class TownProtection extends JavaPlugin {
             return false;
         }
 
+        var overlapsTownList = new ArrayList<SelectorData>();
         for(var otherTown : townMarkData) {
             if(Selector.overlaps(otherTown.rangeOfTown, playerSelectData.get(player))) {
-                player.sendMessage(message +  toColor("&c&lほかの町と干渉しているため追加できませんでした。"));
-                return false;
+                overlapsTownList.add(otherTown.rangeOfTown);
             }
         }
+        if(!overlapsTownList.isEmpty()) {
+            RemoveShowRange(player);
+            for(var selectorData : overlapsTownList) {
+                ShowRange.ShowRangeWithBlock(player, selectorData, Material.GOLD_BLOCK, false);
+                player.sendActionBar(toColor("&c黄色に表示している町と干渉しているため追加できませんでした。"));
+            }
+            player.sendMessage(toColor("&c黄色に表示している町と干渉しているため追加できませんでした。"));
+            return false;
+        }
+
+
         var selectMarkData = new SelectorMarkData();
         selectMarkData.selectorData = playerSelectData.get(player).clone(); //ディープコピーを作成
 
