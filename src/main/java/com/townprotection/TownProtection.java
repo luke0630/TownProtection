@@ -22,22 +22,24 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static com.townprotection.Data.MainData.playerSelectData;
 import static com.townprotection.Data.MainData.townMarkData;
+import static com.townprotection.Range.ShowRange.RemoveShowRange;
+import static com.townprotection.Range.ShowRange.blocks;
+import static com.townprotection.Range.ShowRangeWhenEnter.ShowTownAndMarked;
 import static com.townprotection.Useful.toColor;
 
 public final class TownProtection extends JavaPlugin {
 
     public static final String message = toColor("&a&l" + "[TownProtection]&f&l");
     public static TownProtection instance = null;
-    public static ApiManager manager;
+    public ApiManager apiManager;
 
     public File configFile;
     public YamlConfiguration configData;
-
-    private static ProtocolManager protocolManager;
 
     @Override
     public void onEnable() {
@@ -54,12 +56,9 @@ public final class TownProtection extends JavaPlugin {
         }
 
         new TownProtectionExpansion().register(); //
-        protocolManager = ProtocolLibrary.getProtocolManager();
-
-        var player = Bukkit.getPlayer("Luke0630");
 
         instance = this;
-        manager = new ApiManager();
+        apiManager = new ApiManager();
         var command = getCommand("townprotection");
         Objects.requireNonNull(command).setExecutor(new MainCommand());
 
@@ -86,6 +85,9 @@ public final class TownProtection extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        for(var player : blocks.keySet()) {
+            RemoveShowRange(player);
+        }
     }
 
 
