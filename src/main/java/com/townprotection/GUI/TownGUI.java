@@ -51,6 +51,7 @@ public class TownGUI {
                 inv.setItem(9+6, getItem(Material.NAME_TAG, "&c&l名前を変更する"));
                 inv.setItem(9+8, getItem(Material.REDSTONE_LAMP, "&c&l町の管理者を追加する"));
                 inv.setItem(9*2, getItem(Material.BARRIER, "&c&lこの町を削除する"));
+                inv.setItem(9*2+4, getItem(Material.WOODEN_PICKAXE, "&6&l範囲を変更する"));
             }
         } else {
             inv.setItem(9+8, getItem(Material.REDSTONE_LAMP, "&c&l町の管理者の一覧"));
@@ -130,7 +131,7 @@ public class TownGUI {
 
     public static Inventory getTownIconModeSelectGUI(Player player) {
         var data = MainData.playerOpenGUI.get(player);
-    var inv = getInv(9*3, "&c&lアイコン変更画面");
+        var inv = getInv(9*3, "&c&lアイコン変更画面");
 
         var townData = data.targetTownData;
 
@@ -143,6 +144,14 @@ public class TownGUI {
         inv.setItem(9+3, fromList);
         inv.setItem(9+5, fromInv);
 
+        return inv;
+    }
+
+    public static Inventory getChangedSelectorDataSave() {
+        var inv = getInv(9*3, "&c&l選択範囲を適用する");
+        inv.setItem(0, getItem(Material.FEATHER, "&c&l閉じる"));
+        inv.setItem(9+3, getItem(Material.REDSTONE_BLOCK, "&a&l範囲を適用する"));
+        inv.setItem(9+5, getItem(Material.BARRIER, "&c&l適用しないで、モードから抜け出す"));
         return inv;
     }
 }
