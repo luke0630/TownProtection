@@ -1,7 +1,5 @@
 package com.townprotection;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
 import com.townprotection.CommandRun.MainCommand;
 import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Data.MarkData.TownData;
@@ -11,12 +9,14 @@ import com.townprotection.Listener.CallBackListener;
 import com.townprotection.Listener.GUIListener.MainGUIListener;
 import com.townprotection.Listener.Listener;
 import com.townprotection.PlaceholderAPISystem.TownProtectionExpansion;
+import com.townprotection.Range.ShowRange;
 import com.townprotection.Range.ShowRangeWhenEnter;
 import com.townprotection.Selector.Selector;
 import com.townprotection.System.SaveLoad;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -76,6 +76,7 @@ public final class TownProtection extends JavaPlugin {
         new SaveLoad().MakeFile();
         new CallBackListener().Initialization();
         new CallBackListener().UpdateEffect();
+        Selector.SetRangeWithToolInitialization();
         ShowRangeWhenEnter.Initialization();
     }
 
