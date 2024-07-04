@@ -28,12 +28,14 @@ import static com.townprotection.GUI.MarkDataGUI.getMarkDataEditorGUI;
 import static com.townprotection.GUI.ShowListGUI.PAGE_MAX_ITEM;
 import static com.townprotection.GUI.ShowListGUI.getListGUI;
 import static com.townprotection.GUI.TownGUI.*;
+import static com.townprotection.Range.ShowRangeWhenEnter.ShowTownAndMarked;
 import static com.townprotection.TownProtection.*;
 import static com.townprotection.Useful.*;
 
 public class GuiManager {
     public enum GUi {
         PLAYER_LIST,
+        APPLY_SELECTOR_DATA,
         MARK_DATA_EDITOR,
         MARK_DATA_DELETE,
         TOWN_EDITOR,
@@ -65,6 +67,7 @@ public class GuiManager {
         var gui = playerOpenGUI.get(player).gui;
         return switch (gui) {
             case PLAYER_LIST -> getListGUI(player);
+            case APPLY_SELECTOR_DATA -> getChangedSelectorDataSave();
             case MARK_DATA_EDITOR -> getMarkDataEditorGUI(player);
             case MARK_DATA_DELETE -> getMarkDataDeleteGUI(player);
 
@@ -258,7 +261,7 @@ public class GuiManager {
                 listData.guiName = "&8&l町の土地の一覧";
                 listData.interactionName = "&a&l土地を追加する";
                 listData.interactionCallBack = (Object s, Object e) -> {
-                    var data = playerSelectData.get(player);
+                    var data =  playerSelectData.get(player);
                     SelectorData selectData;
                     if(data == null) {
                         player.sendMessage(message + toColor("&c&l選択範囲が指定されていません！"));
@@ -321,6 +324,8 @@ public class GuiManager {
 
                             player.sendMessage(message + townData.townName + "の選択したところに、新しい土地を追加しました。");
                             townData.selectorMarkData.add(selectMarkData);
+
+                            ShowTownAndMarked(player, townData, false);
 
                             Save();
 
