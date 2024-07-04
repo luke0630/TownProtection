@@ -5,7 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -13,6 +13,8 @@ import org.bukkit.inventory.meta.SkullMeta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static com.townprotection.Selector.Selector.actionBarSchedulers;
 
 public class Useful {
     public static String toColor(String message) {
@@ -71,6 +73,20 @@ public class Useful {
             return "&b&l有効";
         } else {
             return "&c&l無効";
+        }
+    }
+
+    public static void ShowActionBar(Player player, String message) {
+        HiddenActionBar(player);
+        actionBarSchedulers.put(player, Bukkit.getScheduler().runTaskTimerAsynchronously(TownProtection.instance, () -> {
+            player.sendActionBar(toColor(message));
+        }, 0, 20L));
+    }
+
+    public static void HiddenActionBar(Player player) {
+        if(actionBarSchedulers.containsKey(player)) {
+            actionBarSchedulers.get(player).cancel();
+            actionBarSchedulers.remove(player);
         }
     }
 
