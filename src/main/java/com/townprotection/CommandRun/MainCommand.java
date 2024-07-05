@@ -1,19 +1,20 @@
 package com.townprotection.CommandRun;
 
 import com.townprotection.Data.GUIData.GUIData;
+import com.townprotection.Data.MainData;
 import com.townprotection.GUI.GuiManager;
 import com.townprotection.Selector.GiveSelector;
 import com.townprotection.Selector.Selector;
-import com.townprotection.System.SaveLoad;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import static com.townprotection.Data.MainData.*;
+import static com.townprotection.Data.MainData.playerOpenGUI;
+import static com.townprotection.Data.MainData.playerSelectData;
 import static com.townprotection.Selector.Selector.*;
-import static com.townprotection.TownProtection.message;
+import static com.townprotection.Useful.toColor;
 
 public class MainCommand implements CommandExecutor {
     @Override
@@ -36,37 +37,48 @@ public class MainCommand implements CommandExecutor {
                 GuiManager.openListGUI(player, GuiManager.ListGUIPreset.TOWN_LIST);
                 return false;
             }
-            if(strings.length == 1) {
-                switch(strings[0]) {
-                    case "show" -> Selector.ShowMode(player);
+
+            String targetPermission = "townprotection.commands." + strings[0];
+            if(!player.hasPermission(targetPermission)) {
+                player.sendMessage(toColor("&cあんたはこれを実行する権限を持っていません！"));
+                return false;
+            }
+
+            switch (strings[0]) {
+                case "show" -> Selector.ShowMode(player);
+                case "wand" -> GiveSelector.giveSelector(player);
+                case "deselect" -> {
+                    if(!schedulers.isEmpty()) {
+                        for (var scheduler : schedulers.get(player)) {
+                            scheduler.cancel();
+                        }
+                        schedulers.remove(player);
+                    }
+                    if(!playerSelectData.containsKey(player)) {
+                        player.sendMessage(toColor("&c選択範囲が存在しなかったため削除しませんでした。"));
+                        return false;
+                    }
+                    playerSelectData.remove(player);
+                    player.sendMessage(toColor("&a選択範囲を消しました。"));
                 }
-            } else if(strings.length == 2) {
-                if(strings[0].equalsIgnoreCase("open")) {
-                    for(var town : townMarkData) {
-                        if(strings[1].equalsIgnoreCase(town.townName)) {
-                            if(!playerOpenGUI.containsKey(player)) {
-                                playerOpenGUI.put(player, new GUIData());
-                            }
-                            playerOpenGUI.get(player).targetTownData = town;
+                case "open" -> {
+                    if(strings.length == 1) {
+                        player.sendMessage(toColor("&c第二引数が含まれていません。"));
+                        return false;
+                    }
+
+                    for (var townData : MainData.townMarkData) {
+                        if (townData.townName.equalsIgnoreCase(strings[1])) {
+                            var guiData = new GUIData();
+                            guiData.targetTownData = townData;
+                            playerOpenGUI.put(player, guiData);
                             GuiManager.openGUI(player, GuiManager.GUi.TOWN_EDITOR);
                             return false;
                         }
                     }
-                    player.sendMessage(message + strings[1] + " という町は存在しないため開けませんでした。");
+                    player.sendMessage(toColor("&cその名前の町は存在しないため開けませんでした。"));
+                    return false;
                 }
-            }
-            if(strings[0].equalsIgnoreCase("wand")) {
-                GiveSelector.giveSelector(player);
-            }
-            else if(strings[0].equals("save")) {
-                new SaveLoad().SaveToConfig();
-            }
-            //******DEBUG******//
-            else if(strings[0].equalsIgnoreCase("deselect")) {
-                for (var scheduler : Selector.schedulers.get(player)) {
-                    scheduler.cancel();
-                }
-                playerSelectData.remove(player);
             }
 
         } else {
@@ -75,3 +87,4 @@ public class MainCommand implements CommandExecutor {
         return false;
     }
 }
+
