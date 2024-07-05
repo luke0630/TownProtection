@@ -1,6 +1,7 @@
 package com.townprotection;
 
 import com.townprotection.CommandRun.MainCommand;
+import com.townprotection.CommandRun.MainCommandTabComplete;
 import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.Data.SelectorData.SelectorData;
@@ -72,6 +73,7 @@ public final class TownProtection extends JavaPlugin {
         for(var listener : listeners) {
             getServer().getPluginManager().registerEvents(listener, this);
         }
+        getServer().getPluginCommand("townprotection").setTabCompleter(new MainCommandTabComplete());
 
         new SaveLoad().MakeFile();
         new CallBackListener().Initialization();
