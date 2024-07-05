@@ -14,6 +14,12 @@ public class GiveSelector {
         setLore(wand, List.of(
                 SELECTOR_LORE
         ));
-        player.getInventory().addItem( wand );
+        if(player.getInventory().firstEmpty() == -1) {
+            player.getWorld().dropItem(player.getLocation(), wand);
+            player.sendMessage(toColor("&cインベントリがいっぱいなため、あなたの場所にツールをドロップしました。"));
+        } else {
+            player.getInventory().addItem( wand );
+            player.sendMessage(toColor("&aツールを与えました！"));
+        }
     }
 }
