@@ -6,4 +6,34 @@ depend: [ProtocolLib, PlaceholderAPI]
 commands:
   townprotection:
     aliases: tw
+    description: メインコマンド
+    permission: townprotection.commands.townprotection
+    permission-message: "あなたはこれを実行する権限を持っていません。"
 
+permissions:
+  townprotection.*:
+    children:
+      townprotection.commands.*: true
+    description: すべてのコマンド
+    default: op
+  townprotection.commands.*:
+    description: commands permission description
+    children:
+      townprotection.commands: true
+    default: true
+
+  townprotection.commands.townprotection:
+    description: メインコマンド
+    default: true
+  townprotection.commands.wand:
+    description: ツールを付与する
+    default: true
+  townprotection.commands.show:
+    description: すべての町と土地の範囲を可視化する
+    default: true
+  townprotection.commands.deselect:
+    description: 選択範囲を解除する
+    default: true
+  townprotection.commands.open:
+    description: コマンドから町の編集画面を開く
+    default: true
