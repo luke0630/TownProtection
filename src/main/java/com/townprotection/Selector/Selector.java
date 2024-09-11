@@ -62,7 +62,7 @@ public class Selector {
                     if(showModePlayer.contains(player)) return;
                     RemoveShowRange(player);
                     for(var town : townMarkData) {
-                        if(overlaps(town.rangeOfTown, playerSelectData.get(player))) {
+                        if(overlaps(town.getSelectorData(), playerSelectData.get(player))) {
                             ShowTownAndMarked(player, town, false);
                         }
                     }
@@ -287,7 +287,7 @@ public class Selector {
             var pos = new SelectorData();
             pos.startBlock = loc;
             pos.endBlock = loc;
-            if(overlaps(town.rangeOfTown, pos)) {
+            if(overlaps(town.getSelectorData(), pos)) {
                 return town;
             }
         }
@@ -315,7 +315,7 @@ public class Selector {
             var previousData = changeSelectorDataPlayer.get(player);
             if(previousData.getMarkData() == null) {
                 var newTownData = previousData.getTownData();
-                newTownData.rangeOfTown = playerSelectData.get(player).clone();
+                newTownData.setSelectorData(playerSelectData.get(player).clone());
                 previousData.setTownData(newTownData);
                 Save();
             } else if(previousData.getMarkData() != null) { //土地の編集だった場合
@@ -367,7 +367,7 @@ public class Selector {
     public static void ChangeTownSelectorData(Player player, TownData townData) {
         var currentTownData = Selector.getTownFromLocation(player.getLocation());
         if(currentTownData != null && currentTownData.equals(townData)) {
-            ChangeSelectorData(player, townData ,null, townData.townName);
+            ChangeSelectorData(player, townData ,null, townData.getName());
         } else {
             player.sendMessage(toColor("&c町の範囲を変更する場合はあなた自身がその変更したい町に現在いる必要があります。"));
         }
@@ -380,7 +380,7 @@ public class Selector {
         }
         var currentMarkData = Selector.getMarkDataFromLocation(currentTownData, player.getLocation());
         if(currentMarkData != null && currentMarkData.equals(markData)) {
-            ChangeSelectorData(player, currentTownData ,currentMarkData, currentTownData.townName);
+            ChangeSelectorData(player, currentTownData ,currentMarkData, currentTownData.getName());
         } else {
             player.sendMessage(toColor("&c土地の範囲を変更する場合はあなた自身がその変更したい土地に現在いる必要があります。"));
         }
@@ -397,9 +397,9 @@ public class Selector {
         player.sendMessage(toColor("&c--------------------------------------------------"));
 
         SelectorData chooseData;
-        ShowRange.ShowRangeWithBlock(player, townData.rangeOfTown, Material.LIME_WOOL, true);
+        ShowRange.ShowRangeWithBlock(player, townData.getSelectorData(), Material.LIME_WOOL, true);
         if(selectorMarkData == null) {
-            chooseData = townData.rangeOfTown.clone();
+            chooseData = townData.getSelectorData().clone();
         } else {
             chooseData = selectorMarkData.selectorData.clone();
             for(var showSelectorData : townData.selectorMarkData) {
@@ -432,13 +432,13 @@ public class Selector {
                 ShowRange.RemoveShowRange(player);
 
                 if(changeData.markData != null) {
-                    ShowRange.ShowRangeWithBlock(player, changeData.getTownData().rangeOfTown, Material.LIME_WOOL, false);
+                    ShowRange.ShowRangeWithBlock(player, changeData.getTownData().getSelectorData(), Material.LIME_WOOL, false);
                 } else {
                     //町の範囲の編集
                     for(var data : townMarkData) {
                         if(data.equals(changeData.getTownData())) continue;
-                        if(overlaps(data.rangeOfTown, playerSelectData.get(player))) {
-                            ShowRange.ShowRangeWithBlock(player, data.rangeOfTown, Material.REDSTONE_LAMP, false);
+                        if(overlaps(data.getSelectorData(), playerSelectData.get(player))) {
+                            ShowRange.ShowRangeWithBlock(player, data.getSelectorData(), Material.REDSTONE_LAMP, false);
                         }
                     }
                 }
@@ -464,14 +464,14 @@ public class Selector {
                     isTrue = false;
                 }
             }
-            if(!Selector.isRangeInRange(changeData.getTownData().rangeOfTown, playerSelectData.get(player))) {
+            if(!Selector.isRangeInRange(changeData.getTownData().getSelectorData(), playerSelectData.get(player))) {
                 player.sendMessage(toColor("&c緑色の範囲(町)に収める必要があります！"));
                 isTrue = false;
             }
         } else {
             for(var townData : townMarkData) {
                 if(townData.equals(changeData.getTownData())) continue;
-                if(overlaps(townData.rangeOfTown, playerSelectData.get(player))) {
+                if(overlaps(townData.getSelectorData(), playerSelectData.get(player))) {
                     player.sendMessage(toColor("&cほかの町の範囲に重なっています！"));
                     isTrue = false;
                     break;

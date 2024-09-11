@@ -10,9 +10,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.luke.takoyakiLibrary.TakoUtility;
 
 import static com.townprotection.Data.MainData.*;
 import static com.townprotection.GUI.GuiManager.openGUI;
@@ -26,11 +26,12 @@ import static com.townprotection.Useful.HiddenActionBar;
 import static com.townprotection.Useful.toColor;
 
 public class MainGUIListener implements Listener {
-    @EventHandler
     public void onClickInventory(InventoryClickEvent event) {
         var player = (Player) event.getWhoClicked();
         var slot = event.getSlot();
         var item = event.getCurrentItem();
+
+        player.sendMessage("クリックしたスロットインデックス: " + slot);
 
         if(!playerOpenGUI.containsKey(player)) return;
         var gui = playerOpenGUI.get(player).gui;
@@ -95,7 +96,7 @@ public class MainGUIListener implements Listener {
                             //既に存在します
                             player.sendMessage(TownProtection.message + result + toColor(" &c&lこの名前はすでに使われているため使用不可能です。"));
                         } else {
-                            guiData.targetTownMarkData.displayName = result;
+                            guiData.targetTownMarkData.setName(result);
                             player.sendMessage(TownProtection.message + result + " に変更しました。");
                             playerOpenGUI.put(player, guiData);
                             openGUI(player, GuiManager.GUi.MARK_DATA_EDITOR );
@@ -129,7 +130,7 @@ public class MainGUIListener implements Listener {
                 var targetMarked = openData.targetTownMarkData;
                 var townIndex = townMarkData.indexOf(townData);
                 townMarkData.get(townIndex).selectorMarkData.remove(targetMarked);
-                player.sendMessage(message + "&c&l" + townData.townName + "の、" + targetMarked.displayName + "(土地)を削除しました。");
+                player.sendMessage(TakoUtility.toColor(message + "&c&l" + townData.getName() + "の、" + targetMarked.getName() + "(土地)を削除しました。"));
                 player.closeInventory();
             } else if(slot == 9+5) {
                 openGUI(player, GuiManager.GUi.MARK_DATA_EDITOR);
@@ -163,7 +164,7 @@ public class MainGUIListener implements Listener {
                                 //既に存在します
                                 player.sendMessage(TownProtection.message + result + toColor(" &c&lこの名前はすでに使われているため使用不可能です。"));
                             } else {
-                                guiData.targetTownData.townName = result;
+                                guiData.targetTownData.setName(result);
                                 player.sendMessage(TownProtection.message + result + " に変更しました。");
                                 playerOpenGUI.put(player, guiData);
                                 openGUI(player, GuiManager.GUi.TOWN_EDITOR);
@@ -183,12 +184,15 @@ public class MainGUIListener implements Listener {
             if(slot == 9*2) {
                 openGUI(player, GuiManager.GUi.TOWN_DELETE_CONFIRM);
             }
+            if(slot == 9*2+2) {
+                //openListGUI(player, GuiManager.ListGUIPreset.CURRENT_TOWN_ALLOW_ACTIONS);
+            }
             if(slot == 9*2+4) {
                 var currentOpenTown = playerOpenGUI.get(player).targetTownData;
                 ChangeTownSelectorData(player, currentOpenTown);
             }
             if(slot == 9*2+8) {
-                TeleportSelectorData(player, townData.rangeOfTown);
+                TeleportSelectorData(player, townData.getSelectorData());
             }
         }
         else if(gui == GuiManager.GUi.TOWN_EFFECT_EDITOR) {
@@ -257,7 +261,7 @@ public class MainGUIListener implements Listener {
         else if(gui == GuiManager.GUi.TOWN_CHANGE_MAYOR) {
             if(slot == 9+3) {
                 player.sendMessage(message + "市長を" + Bukkit.getOfflinePlayer(playerOpenGUI.get(player).nextMayor) .getName() + "に変更しました" );
-                playerOpenGUI.get(player).targetTownData.townMayor = playerOpenGUI.get(player).nextMayor;
+                playerOpenGUI.get(player).targetTownData.setOwner(playerOpenGUI.get(player).nextMayor);
                 TownProtection.Save();
                 player.closeInventory();
             }
@@ -269,7 +273,7 @@ public class MainGUIListener implements Listener {
             if(slot == 9+3) {
                 //町を削除
                 var targetTown = playerOpenGUI.get(player).targetTownData;
-                player.sendMessage(message + targetTown.townName + "を削除しました。");
+                player.sendMessage(message + targetTown.getName() + "を削除しました。");
                 townMarkData.remove(targetTown); //削除する
                 TownProtection.Save();
                 player.closeInventory();

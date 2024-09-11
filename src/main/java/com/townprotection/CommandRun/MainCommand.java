@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import static com.townprotection.Data.MainData.playerOpenGUI;
 import static com.townprotection.Data.MainData.playerSelectData;
 import static com.townprotection.Selector.Selector.*;
+import static com.townprotection.TownProtection.getManager;
 import static com.townprotection.Useful.toColor;
 
 public class MainCommand implements CommandExecutor {
@@ -26,15 +27,16 @@ public class MainCommand implements CommandExecutor {
                     ShowMode(player);
                 } else if(!strings[0].equalsIgnoreCase("show")) {
                     ShowMode(player);
+
                 }
             }
             if(strings.length == 0) {
                 playerOpenGUI.put(player, new GUIData());
                 if(changeSelectorDataPlayer.containsKey(player)) {
-                    GuiManager.openGUI(player, GuiManager.GUi.APPLY_SELECTOR_DATA);
+                    getManager().OpenGUI(player, GuiManager.GUi.APPLY_SELECTOR_DATA);
                     return false;
                 }
-                GuiManager.openListGUI(player, GuiManager.ListGUIPreset.TOWN_LIST);
+                getManager().OpenListGUI(player, GuiManager.ListGUIPreset.TOWN_LIST);
                 return false;
             }
 
@@ -45,6 +47,7 @@ public class MainCommand implements CommandExecutor {
             }
 
             switch (strings[0]) {
+                case "test" -> getManager().OpenListGUI(player, GuiManager.ListGUIPreset.TOWN_LIST);
                 case "show" -> Selector.ShowMode(player);
                 case "wand" -> GiveSelector.giveSelector(player);
                 case "deselect" -> {
@@ -68,7 +71,7 @@ public class MainCommand implements CommandExecutor {
                     }
 
                     for (var townData : MainData.townMarkData) {
-                        if (townData.townName.equalsIgnoreCase(strings[1])) {
+                        if (townData.getName().equalsIgnoreCase(strings[1])) {
                             var guiData = new GUIData();
                             guiData.targetTownData = townData;
                             playerOpenGUI.put(player, guiData);

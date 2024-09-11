@@ -6,6 +6,6 @@ import org.bukkit.entity.Player;
 
 public class PlayerEnterTown {
     public Player player;
-    public TownData townData = new TownData();
-    public SelectorMarkData markData = new SelectorMarkData();
+    public TownData townData = new TownData(null, null, null);
+    public SelectorMarkData markData = new SelectorMarkData(null, null, null);
 }

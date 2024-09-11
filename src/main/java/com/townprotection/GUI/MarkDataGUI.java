@@ -13,8 +13,8 @@ import static com.townprotection.Data.MainData.*;
 public class MarkDataGUI {
     public static Inventory getMarkDataEditorGUI(Player player) {
         var markData = playerOpenGUI.get(player).targetTownMarkData;
-        var inv = getInv(9*3, toColor("&c&l" + markData.displayName + "&8&lの編集"));
-        var item = getItem(Material.OAK_LOG, markData.displayName);
+        var inv = getInv(9*3, toColor("&c&l" + markData.getName() + "&8&lの編集"));
+        var item = getItem(Material.OAK_LOG, markData.getName());
         var changeMarkName = getItem(Material.NAME_TAG, "&a&l土地の名前を変更する");
 
         var teleportTown = getItem(Material.COMPASS, "テレポートする");
@@ -23,7 +23,7 @@ public class MarkDataGUI {
         ));
         inv.setItem(9*2+8, teleportTown);
 
-        var owner = getPlayerHead( markData.owner );
+        var owner = getPlayerHead( markData.getOwner() );
         var allowedPlayers = getItem(Material.REDSTONE, "&9&l許可者リスト");
         var manager = getItem(Material.REDSTONE_LAMP, "&6&l管理者リスト");
         var back = getItem(Material.FEATHER, "&c&l戻る");
@@ -42,7 +42,7 @@ public class MarkDataGUI {
                 "&c&lオーナー"
         ));
         setLore(changeMarkName, List.of(
-                "&c&l現在の名前: &f&l" + markData.displayName,
+                "&c&l現在の名前: &f&l" + markData.getManager(),
                 "&c&lクリックして変更する"
         ));
         setLore(allowList, List.of(
@@ -76,7 +76,7 @@ public class MarkDataGUI {
                 "&f&lクリックすると、土地が削除されます(ブロックなどに変更はありません。)"
         ));
 
-        inv.setItem(4, getItem(Material.OAK_LOG, targetMarked.displayName));
+        inv.setItem(4, getItem(Material.OAK_LOG, targetMarked.getName()));
 
         inv.setItem(9+3, ok);
         inv.setItem(9+5, no);

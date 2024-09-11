@@ -28,7 +28,7 @@ public class ShowRangeWhenEnter {
                     RemoveShowRange(player);
                     if(playerSelectData.containsKey(player) && playerSelectData.get(player).startBlock != null && playerSelectData.get(player).endBlock != null) {
                         for(var town : townMarkData) {
-                            if(overlaps(town.rangeOfTown, playerSelectData.get(player))) {
+                            if(overlaps(town.getSelectorData(), playerSelectData.get(player))) {
                                 ShowTownAndMarked(player, town, false);
                             }
                         }
@@ -56,19 +56,19 @@ public class ShowRangeWhenEnter {
                 if(changeSelectorDataPlayer.containsKey(player)) return;
                 HiddenActionBar(player);
                 if(showModePlayer.contains(player)) return;
-                if(playerSelectData.containsKey(player) && playerSelectData.get(player).endBlock != null && playerSelectData.get(player).startBlock != null && Selector.IsSelectorTool(player) && overlaps(playerSelectData.get(player), exit.previousTownData.rangeOfTown)) return;
+                if(playerSelectData.containsKey(player) && playerSelectData.get(player).endBlock != null && playerSelectData.get(player).startBlock != null && Selector.IsSelectorTool(player) && overlaps(playerSelectData.get(player), exit.previousTownData.getSelectorData())) return;
                 RemoveShowRange(player);
             }
         });
     }
 
     public static void ShowTownAndMarked(Player player, TownData townData, boolean isShowDescription)  {
-        ShowRange.ShowRangeWithBlock(player, townData.rangeOfTown, Material.GOLD_BLOCK, false);
+        ShowRange.ShowRangeWithBlock(player, townData.getSelectorData(), Material.GOLD_BLOCK, false);
         for(var marked : townData.selectorMarkData) {
             ShowRange.ShowRangeWithBlock(player, marked.selectorData, Material.REDSTONE_BLOCK, false);
         }
         if(isShowDescription) {
-            ShowActionBar(player, "&a" + townData.townName + " の範囲を表示中 &f- &6金・町の範囲 &f/ &c赤・土地の範囲");
+            ShowActionBar(player, "&a" + townData.getName() + " の範囲を表示中 &f- &6金・町の範囲 &f/ &c赤・土地の範囲");
         }
     }
 }

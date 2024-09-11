@@ -1,10 +1,24 @@
 package com.townprotection;
 
+import com.townprotection.AfterGUI.Action.List_Action;
+import com.townprotection.AfterGUI.Action.List_CurrentActions;
+import com.townprotection.AfterGUI.Manager.List_AddManager;
+import com.townprotection.AfterGUI.Manager.List_CurrentManager;
+import com.townprotection.AfterGUI.SetChangedSelectorDataGUI;
+import com.townprotection.AfterGUI.Town.Effect.List_TownEditor_AddEffect;
+import com.townprotection.AfterGUI.Town.Effect.List_TownEditor_CurrentEffect;
+import com.townprotection.AfterGUI.Town.Effect.TownEditor_EffectEditor;
+import com.townprotection.AfterGUI.Town.*;
+import com.townprotection.AfterGUI.Town.Marked.Marked_Data_Editor;
+import com.townprotection.AfterGUI.Town.Marked.Marked_Delete;
+import com.townprotection.AfterGUI.Town.Marked.Marked_List;
+import com.townprotection.AfterGUI.Town.Marked.TownEditor_BlockIconList;
 import com.townprotection.CommandRun.MainCommand;
 import com.townprotection.CommandRun.MainCommandTabComplete;
 import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.Data.SelectorData.SelectorData;
+import com.townprotection.GUI.GuiManager;
 import com.townprotection.Listener.BlockBreakListener;
 import com.townprotection.Listener.CallBackListener;
 import com.townprotection.Listener.GUIListener.MainGUIListener;
@@ -21,9 +35,11 @@ import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.luke.yakisobaGUILib.YakisobaGUIManager;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static com.townprotection.Data.MainData.playerSelectData;
@@ -42,8 +58,39 @@ public final class TownProtection extends JavaPlugin {
     public File configFile;
     public YamlConfiguration configData;
 
+
+    public static YakisobaGUIManager<GuiManager.GUi, GuiManager.ListGUIPreset> getManager() {
+        return manager;
+    }
+
+    private static YakisobaGUIManager<GuiManager.GUi, GuiManager.ListGUIPreset> manager;
+
     @Override
     public void onEnable() {
+        manager = new YakisobaGUIManager<>();
+        manager.Initialization(this, List.of(
+                new TownEditor(),
+                new TownEditor_Delete(),
+                new List_TownList(),
+                new List_TownEditor_CurrentEffect(),
+                new List_TownEditor_AddEffect(),
+                new TownEditor_EffectEditor(),
+                new Marked_List(),
+                new Marked_Data_Editor(),
+                new Marked_Delete(),
+                new List_TownEditor_SelectMayor(),
+                new TownEditor_ChangeMayor(),
+                new List_TownManager(),
+                new List_TownEditor_AddManager(),
+                new TownEditor_ModeSelect(),
+                new TownEditor_BlockIconList(),
+                new TownEditor_InventoryIconList(),
+                new SetChangedSelectorDataGUI(),
+                new List_CurrentActions(),
+                new List_Action(),
+                new List_AddManager(),
+                new List_CurrentManager()
+        ));
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
             getLogger().warning("Could not find PlaceholderAPI! This plugin is required.");
@@ -111,8 +158,8 @@ public final class TownProtection extends JavaPlugin {
 
         var overlapsTownList = new ArrayList<SelectorData>();
         for(var otherTown : townMarkData) {
-            if(Selector.overlaps(otherTown.rangeOfTown, playerSelectData.get(player))) {
-                overlapsTownList.add(otherTown.rangeOfTown);
+            if(Selector.overlaps(otherTown.getSelectorData(), playerSelectData.get(player))) {
+                overlapsTownList.add(otherTown.getSelectorData());
             }
         }
         if(!overlapsTownList.isEmpty()) {
@@ -125,15 +172,12 @@ public final class TownProtection extends JavaPlugin {
             return false;
         }
 
+        var townData = new TownData(Material.GRASS_BLOCK, "無題の町", Useful.getCurrentDate());
 
-        var selectMarkData = new SelectorMarkData();
-        selectMarkData.selectorData = playerSelectData.get(player).clone(); //ディープコピーを作成
-
-        var townData = new TownData();
-        if (TownProtection.IsAlreadyExistTownName(townData.townName)) {
+        if (TownProtection.IsAlreadyExistTownName(townData.getName())) {
             int counter = 1;
             boolean nameExists;
-            String baseName = townData.townName;
+            String baseName = townData.getName();
             String newName = "";
 
             do {
@@ -141,7 +185,7 @@ public final class TownProtection extends JavaPlugin {
                 newName = baseName + "(" + counter + ")";
 
                 for (var town : townMarkData) {
-                    if (town.townName.equals(newName)) {
+                    if (town.getName().equals(newName)) {
                         nameExists = true;
                         counter++;
                         break;
@@ -149,13 +193,14 @@ public final class TownProtection extends JavaPlugin {
                 }
             } while (nameExists);
 
-            townData.townName = newName;
+            townData.setName(newName);
         }
-        townData.townMayor = player.getUniqueId();
-        townData.rangeOfTown = playerSelectData.get(player).clone(); //必ずクローンを使用する
+
+        townData.setOwner(player.getUniqueId());
+        townData.setSelectorData(playerSelectData.get(player).clone()); //必ずクローンを使用する
 
         townMarkData.add(townData);
-        player.sendMessage(message + townData.townName + " という名前で新たな町を追加しました！");
+        player.sendMessage(message + townData.getName() + " という名前で新たな町を追加しました！この町は保護されています。");
 
         ShowTownAndMarked(player, townData, false);
 
@@ -167,17 +212,17 @@ public final class TownProtection extends JavaPlugin {
 
 
     public static boolean IsTownAdmin(Player player, TownData town) {
-        if (player.isOp() || town.townMayor.toString().equalsIgnoreCase(player.getUniqueId().toString()) || town.townManager.contains(player.getUniqueId())) return true;
+        if (player.isOp() || town.getOwner().toString().equalsIgnoreCase(player.getUniqueId().toString()) || town.getManager().contains(player.getUniqueId())) return true;
         return false;
     }
     public static boolean IsMarkedAdmin(Player player, SelectorMarkData markData) {
-        if(player.isOp() || markData.owner.toString().equalsIgnoreCase(player.getUniqueId().toString()) || markData.manager.contains(player.getUniqueId())) return true;
+        if(player.isOp() || markData.getOwner().toString().equalsIgnoreCase(player.getUniqueId().toString()) || markData.manager.contains(player.getUniqueId())) return true;
         return false;
     }
 
     public static boolean IsAlreadyExistTownName(String name) {
         for(var town : townMarkData) {
-            if(town.townName.equals(name)){
+            if(town.getName().equals(name)){
                 return true;
             }
         }
@@ -185,7 +230,7 @@ public final class TownProtection extends JavaPlugin {
     }
     public static boolean IsAlreadyExistMarkedName(TownData data, String name) {
         for(var marked : data.selectorMarkData) {
-            if(marked.displayName.equals(name)) {
+            if(marked.getName().equals(name)) {
                 return true;
             }
         }

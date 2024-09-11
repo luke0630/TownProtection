@@ -2,7 +2,6 @@ package com.townprotection.PlaceholderAPISystem;
 
 import com.townprotection.Selector.Selector;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +37,7 @@ public class TownProtectionExpansion extends PlaceholderExpansion {
             if(town == null) {
                 return "---";
             }
-            return town.townName;
+            return town.getName();
         }
         if(params.equals("currentmarked")) {
             var town = Selector.getTownFromLocation(player.getLocation());
@@ -49,7 +48,7 @@ public class TownProtectionExpansion extends PlaceholderExpansion {
             if(marked == null) {
                 return "---";
             }
-            return marked.displayName;
+            return marked.getName();
         }
 
         return null; //

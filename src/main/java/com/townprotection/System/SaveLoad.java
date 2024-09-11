@@ -1,5 +1,6 @@
 package com.townprotection.System;
 
+import com.townprotection.Data.DataAbstract;
 import com.townprotection.Data.MainData;
 import com.townprotection.Data.MarkData.ActionList;
 import com.townprotection.Data.MarkData.SelectorMarkData;
@@ -7,27 +8,18 @@ import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.Data.SelectorData.SelectorData;
 import com.townprotection.Effect.EffectList.ShowTitle;
 import com.townprotection.Effect.EffectList.System.AbstractEffect;
-import com.townprotection.GUI.MarkDataGUI;
 import com.townprotection.TownProtection;
 import com.townprotection.Useful;
-import jdk.jfr.Experimental;
-import net.kyori.adventure.text.event.HoverEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.Configuration;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.checkerframework.checker.units.qual.C;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
-import static com.townprotection.TownProtection.Save;
 import static com.townprotection.TownProtection.instance;
 import static com.townprotection.Useful.stringToUUID;
 
@@ -67,15 +59,26 @@ public class SaveLoad {
         int counter = 0;
         for(var townData : MainData.townMarkData) {
             var path = TOWN_SECTION + counter;
-            data.set(path + ".name", townData.townName);
-            data.set(path + ".mayor", townData.townMayor.toString());
+            data.set(path + ".name", townData.getName());
+            data.set(path + ".mayor", townData.getOwner().toString());
 
-            data.set(path + ".manager", Useful.uuidToString(townData.townManager));
-            data.set(path + ".allowAction", townData.allowActionList);
+            data.set(path + ".manager", Useful.uuidToString(townData.getManager()));
+
+            var actionList = new ArrayList<String>();
+            for(var action : townData.allowActionList) {
+                actionList.add(action.name());
+            }
+            data.set(path + ".allowAction", actionList);
             data.set(path + ".description", townData.description);
-            setSelectorData(path + ".range", townData.rangeOfTown);
+            setSelectorData(path + ".range", townData.getSelectorData());
             setMarkData(path + ".markData.", townData.selectorMarkData);
             setEffectData(path + ".effect.", townData.effectList);
+
+            var datePath = path + ".creationDate.";
+            data.set(datePath + "year", townData.getCreationDate().getYear());
+            data.set(datePath + "month", townData.getCreationDate().getMonth());
+            data.set(datePath + "day", townData.getCreationDate().getDay());
+
             counter++;
         }
         SaveToFile();
@@ -107,8 +110,8 @@ public class SaveLoad {
         for(var markData : markDataList) {
             String parentPathBuilder = parentPath + counter;
 
-            data.set(parentPathBuilder + ".owner", markData.owner.toString());
-            data.set(parentPathBuilder + ".name", markData.displayName);
+            data.set(parentPathBuilder + ".owner", markData.getOwner().toString());
+            data.set(parentPathBuilder + ".name", markData.getName());
             data.set(parentPathBuilder + ".allowedPlayer", Useful.uuidToString(markData.allowedPlayer));
             data.set(parentPathBuilder + ".manager", Useful.uuidToString(markData.manager));
 
@@ -118,6 +121,11 @@ public class SaveLoad {
             }
             data.set(parentPathBuilder + ".allowAction", actionList);
             setSelectorData(parentPathBuilder + ".selectorData", markData.selectorData);
+
+            var datePath = parentPathBuilder + ".creationDate.";
+            data.set(datePath + "year", markData.getCreationDate().getYear());
+            data.set(datePath + "month", markData.getCreationDate().getMonth());
+            data.set(datePath + "day", markData.getCreationDate().getDay());
             counter++;
         }
     }
@@ -153,11 +161,16 @@ public class SaveLoad {
         for(var index : instance.configData.getConfigurationSection(parentPath).getKeys(false)) {
             var resultPath = parentPath + index + ".";
 
-            var markData = new SelectorMarkData();
-             markData.owner = UUID.fromString(instance.configData.getString(resultPath + "owner"));
-             markData.displayName = instance.configData.getString(resultPath + "name");
-             markData.allowedPlayer = stringToUUID(instance.configData.getStringList(resultPath + "allowedPlayer"));
-             markData.manager = stringToUUID(instance.configData.getStringList(resultPath + "manager"));
+            var datePath = resultPath + ".creationDate.";
+            var town_year = instance.configData.getInt(datePath + "year");
+            var town_month = instance.configData.getInt(datePath + "month");
+            var town_day = instance.configData.getInt(datePath + "day");
+
+            var name = instance.configData.getString(resultPath + "name");
+            var markData = new SelectorMarkData(Material.OAK_LOG, name, new DataAbstract.CreationDate(town_year, town_month, town_day));
+             markData.setOwner(UUID.fromString(instance.configData.getString(resultPath + "owner")));
+             markData .allowedPlayer = stringToUUID(instance.configData.getStringList(resultPath + "allowedPlayer"));
+             markData.setManager(stringToUUID(instance.configData.getStringList(resultPath + "manager")));
 
              for(var action : instance.configData.getStringList(resultPath + "allowAction")) {
                  markData.allowActionList.add(ActionList.Action.valueOf(action));
@@ -174,19 +187,28 @@ public class SaveLoad {
         if(!instance.configData.contains(TOWN_SECTION)) return;
         for(var path : instance.configData.getConfigurationSection(TOWN_SECTION).getKeys(false)) {
             var resultPath = TOWN_SECTION + path + ".";
-            var townData = new TownData();
 
-            townData.townName = instance.configData.getString(resultPath + "name");
-            townData.townMayor = UUID.fromString(instance.configData.getString(resultPath + "mayor"));
-            townData.townManager = stringToUUID(instance.configData.getStringList(resultPath + "manager"));
-            townData.allowActionList = (List<ActionList.Action>) instance.configData.getList(resultPath + "allowAction");
-            townData.description =instance.configData.getStringList(resultPath + "description");
+            var datePath = resultPath + ".creationDate.";
+            var town_year = instance.configData.getInt(datePath + "year");
+            var town_month = instance.configData.getInt(datePath + "month");
+            var town_day = instance.configData.getInt(datePath + "day");
+
+            var townName = instance.configData.getString(resultPath + "name");
+            var townData = new TownData(Material.GRASS_BLOCK, townName, new DataAbstract.CreationDate(town_year, town_month, town_day));
+
+            townData.setOwner(UUID.fromString(instance.configData.getString(resultPath + "mayor")));
+            townData.setManager(stringToUUID(instance.configData.getStringList(resultPath + "manager")));
+
+            for(var action : instance.configData.getStringList(resultPath + "allowAction")) {
+                townData.allowActionList.add(ActionList.Action.valueOf(action));
+            }
+            townData.description = instance.configData.getStringList(resultPath + "description");
 
             var selectorData = new SelectorData();
             selectorData.startBlock = instance.configData.getLocation(resultPath + "range.start");
             selectorData.endBlock = instance.configData.getLocation(resultPath + "range.end");
 
-            townData.rangeOfTown = selectorData;
+            townData.setSelectorData(selectorData);
 
             loadMarkData(townData, resultPath + "markData.");
             loadEffectData(townData, resultPath + "effect.");

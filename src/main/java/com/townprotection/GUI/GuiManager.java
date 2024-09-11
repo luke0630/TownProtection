@@ -10,6 +10,7 @@ import com.townprotection.Data.SelectorData.SelectorData;
 import com.townprotection.Effect.EffectList.System.AbstractEffect;
 import com.townprotection.Listener.CallBackListener;
 import com.townprotection.Selector.Selector;
+import com.townprotection.Useful;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -60,7 +61,10 @@ public class GuiManager {
         TOWN_ICON_BLOCK_LIST,
         TOWN_ICON_PLAYER_INVENTORY_LIST,
         CURRENT_MARKED_ALLOW_ACTIONS,
-        ACTION_LIST
+        ACTION_LIST,
+        ACTION_CURRENT_LIST,
+        MANAGER_ADD_LIST,
+        MANAGER_CURRENT_LIST,
     }
 
     public static Inventory getGUI(Player player) {
@@ -91,9 +95,9 @@ public class GuiManager {
 
                 var showItem = new ArrayList<TownData>();
                 for (var show : townMarkData) {
-                    var itemStack = getItem(show.townIcon, show.townName);
+                    var itemStack = getItem(show.getIcon(), show.getName());
                     setLore(itemStack, List.of(
-                            "&a&l町長: &f&l" + Bukkit.getOfflinePlayer(show.townMayor).getName()
+                            "&a&l町長: &f&l" + Bukkit.getOfflinePlayer(show.getOwner()).getName()
                     ));
                     showItem.add(show);
                     listData.showItem.add(itemStack);
@@ -171,7 +175,7 @@ public class GuiManager {
 
                 var showItem = new ArrayList<UUID>();
                 for (var showPlayer : Bukkit.getOfflinePlayers()) {
-                    if(townData.townMayor.toString().equalsIgnoreCase(showPlayer.getUniqueId().toString())) continue;
+                    if(townData.getOwner().toString().equalsIgnoreCase(showPlayer.getUniqueId().toString())) continue;
                     var itemStack = getPlayerHead(showPlayer.getUniqueId());
                     setLore(itemStack, List.of(
                             "&c&lクリックして市長にする"
@@ -191,7 +195,7 @@ public class GuiManager {
             }
             case TOWN_MANAGER_LIST -> {
                 var showItem = new ArrayList<UUID>();
-                for (var showPlayer : townData.townManager) {
+                for (var showPlayer : townData.getManager()) {
                     var itemStack = getPlayerHead(showPlayer);
                     if(IsTownAdmin(player, townData)) {
                         setLore(itemStack, List.of(
@@ -204,14 +208,14 @@ public class GuiManager {
 
                 if(IsTownAdmin(player, townData)) {
                     listData.type = ShowListDataEnum.showListDataType.BOTTOM_BACK_INTERACTION;
-                    listData.guiName = townData.townName + "&8&l管理者の編集";
+                    listData.guiName = townData.getName() + "&8&l管理者の編集";
                     listData.interactionName = "&c&l町の管理者を追加する";
 
                     listData.callback = (Object s, Object e) -> {
                         if (s instanceof Integer index && e instanceof InventoryClickEvent event) {
                             if(event.isRightClick()) {
                                 var openData = playerOpenGUI.get(player);
-                                openData.targetTownData.townManager.remove(showItem.get(index));
+                                openData.targetTownData.getManager().remove(showItem.get(index));
                                 Save();
                                 openListGUI(player, ListGUIPreset.TOWN_MANAGER_LIST);
                             }
@@ -220,18 +224,18 @@ public class GuiManager {
                     listData.interactionCallBack = (Object s, Object e) -> openListGUI(player, ListGUIPreset.TOWN_MANAGER_ADD);
                 } else {
                     listData.type = ShowListDataEnum.showListDataType.BOTTOM_BACK;
-                    listData.guiName = townData.townName + "&8&lの管理者リスト";
+                    listData.guiName = townData.getName() + "&8&lの管理者リスト";
                 }
                 listData.backCallBack = (Object s, Object e) -> openGUI(player, GUi.TOWN_EDITOR);
             }
             case TOWN_MANAGER_ADD -> {
                 listData.type = ShowListDataEnum.showListDataType.BOTTOM_BACK;
-                listData.guiName = townData.townName + "&c&lの管理者を追加する";
+                listData.guiName = townData.getName() + "&c&lの管理者を追加する";
 
                 var showItem = new ArrayList<UUID>();
                 for (var showPlayer : Bukkit.getOfflinePlayers()) {
-                    if(townData.townMayor == showPlayer.getUniqueId()) continue;
-                    if(townData.townManager.contains(showPlayer.getUniqueId())) continue;
+                    if(townData.getOwner() == showPlayer.getUniqueId()) continue;
+                    if(townData.getManager().contains(showPlayer.getUniqueId())) continue;
 
                     var itemStack = getPlayerHead(showPlayer.getUniqueId());
                     setLore(itemStack, List.of(
@@ -246,7 +250,7 @@ public class GuiManager {
                 listData.callback = (Object s, Object e) -> {
                     if (s instanceof Integer index && e instanceof InventoryClickEvent) {
                         var openData = playerOpenGUI.get(player);
-                        openData.targetTownData.townManager.add(showItem.get(index));
+                        openData.targetTownData.getManager().add(showItem.get(index));
                         Save();
                         openListGUI(player, ListGUIPreset.TOWN_MANAGER_ADD);
                     }
@@ -273,7 +277,7 @@ public class GuiManager {
 
 
                     if (start != null && end != null) {
-                        if (Selector.isRangeInRange(townData.rangeOfTown, selectData)) {
+                        if (Selector.isRangeInRange(townData.getSelectorData(), selectData)) {
                             var flag = false;
                             var markedCounter = 0;
                             for (var rangeData : townData.selectorMarkData) {
@@ -297,13 +301,13 @@ public class GuiManager {
                                 return;
                             }
 
-                            var selectMarkData = new SelectorMarkData();
+                            var selectMarkData = new SelectorMarkData(Material.OAK_LOG,  "無題の土地", Useful.getCurrentDate());
                             selectMarkData.selectorData = selectData;
-                            selectMarkData.owner = player.getUniqueId();
-                            if (IsAlreadyExistMarkedName(townData, selectMarkData.displayName)) {
+                            selectMarkData.setOwner(player.getUniqueId());
+                            if (IsAlreadyExistMarkedName(townData, selectMarkData.getName())) {
                                 int counter = 1;
                                 boolean nameExists;
-                                String baseName = selectMarkData.displayName;
+                                String baseName = selectMarkData.getName();
                                 String newName;
 
                                 do {
@@ -311,7 +315,7 @@ public class GuiManager {
                                     newName = baseName + "(" + counter + ")";
 
                                     for (var marked : townData.selectorMarkData) {
-                                        if (marked.displayName.equals(newName)) {
+                                        if (marked.getName().equals(newName)) {
                                             nameExists = true;
                                             counter++;
                                             break;
@@ -319,10 +323,10 @@ public class GuiManager {
                                     }
                                 } while (nameExists);
 
-                                selectMarkData.displayName = newName;
+                                selectMarkData.setName(newName);
                             }
 
-                            player.sendMessage(message + townData.townName + "の選択したところに、新しい土地を追加しました。");
+                            player.sendMessage(message + townData.getName() + "の選択したところに、新しい土地を追加しました。");
                             townData.selectorMarkData.add(selectMarkData);
 
                             ShowTownAndMarked(player, townData, false);
@@ -349,11 +353,11 @@ public class GuiManager {
 
                 if(townData.selectorMarkData.isEmpty()) return;
                 for (var targetItem : townData.selectorMarkData) {
-                    var item = getItem(Material.OAK_LOG, targetItem.displayName);
+                    var item = getItem(Material.OAK_LOG, targetItem.getName());
 
 
-                    if(targetItem.owner != null) {
-                        var playeraaa = Bukkit.getOfflinePlayer(targetItem.owner);
+                    if(targetItem.getOwner() != null) {
+                        var playeraaa = Bukkit.getOfflinePlayer(targetItem.getOwner());
                         setLore(item, List.of(
                                 "&c&lオーナー: &f&l" + playeraaa.getName()
                         ));
@@ -391,7 +395,7 @@ public class GuiManager {
 
                 var players = new ArrayList<UUID>();
                 for (var pl : Bukkit.getOfflinePlayers()) {
-                    if (markData.owner.toString().equalsIgnoreCase(pl.getUniqueId().toString())) continue; //オーナー省く
+                    if (markData.getOwner().toString().equalsIgnoreCase(pl.getUniqueId().toString())) continue; //オーナー省く
                     if (markData.manager.contains(pl.getUniqueId())) continue; //権限者を省く
 
                     players.add(pl.getUniqueId());
@@ -407,7 +411,7 @@ public class GuiManager {
                         markData.manager.add(players.get(index));
                         playerOpenGUI.get(player).listData.showItem.clear();
                         for (var pl : Bukkit.getOfflinePlayers()) {
-                            if (markData.owner == pl.getUniqueId()) continue; //オーナー省く
+                            if (markData.getOwner() == pl.getUniqueId()) continue; //オーナー省く
                             if (markData.manager.contains(pl.getUniqueId())) continue; //権限者を省く
 
                             players.add(pl.getUniqueId());
@@ -456,7 +460,7 @@ public class GuiManager {
 
                 var playerList = new ArrayList<UUID>();
                 for (var pl : Bukkit.getOfflinePlayers()) {
-                    if (markData.owner.toString().equalsIgnoreCase(pl.getUniqueId().toString())) continue; //オーナー省く
+                    if (markData.getOwner().toString().equalsIgnoreCase(pl.getUniqueId().toString())) continue; //オーナー省く
                     if (markData.manager.contains(pl.getUniqueId())) continue; //権限者を省く
                     if (markData.allowedPlayer.contains(pl.getUniqueId())) continue; //許可者を省く
                     var guiItem = getPlayerHead(pl.getUniqueId());
@@ -497,7 +501,7 @@ public class GuiManager {
                 listData.callback = (Object s, Object e) -> {
                     if (s instanceof Integer index) {
                         var minIndex = PAGE_MAX_ITEM* listPage.get(player);
-                        townData.townIcon = blocks.get(minIndex + index);
+                        townData.setIcon(blocks.get(minIndex + index));
                         Save();
                         openGUI(player, GUi.TOWN_EDITOR);
                     }
@@ -522,7 +526,7 @@ public class GuiManager {
                 listData.backCallBack = (Object s, Object e) -> openGUI(player, GUi.TOWN_EDITOR);
                 listData.callback = (Object s, Object e) -> {
                     if (s instanceof Integer index) {
-                        townData.townIcon = blocks.get(index);
+                        townData.setIcon(blocks.get(index));
                         Save();
                         openGUI(player, GUi.TOWN_EDITOR);
                     }

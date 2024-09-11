@@ -5,5 +5,5 @@ import org.bukkit.entity.Player;
 
 public class PlayerExitTown {
     public Player player;
-    public TownData previousTownData = new TownData();
+    public TownData previousTownData = new TownData(null, null, null);
 }

@@ -12,7 +12,6 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import static com.townprotection.Data.MainData.playerOpenGUI;
 import static com.townprotection.Data.MainData.setNameRunnable;
 import static com.townprotection.Range.ShowRange.PlaceFakeBlock;
 import static com.townprotection.Selector.Selector.changeSelectorDataPlayer;
@@ -43,12 +42,10 @@ public class Listener implements org.bukkit.event.Listener {
     @EventHandler
     public void onCloseInventory(InventoryCloseEvent event) {
         var player = (Player) event.getPlayer();
-        playerOpenGUI.remove(player);
+        //playerOpenGUI.remove(player);
     }
 
     @EventHandler
     public void onQuitPlayer(PlayerQuitEvent event) {
-        var player = event.getPlayer();
-        playerOpenGUI.remove(player);
     }
 }

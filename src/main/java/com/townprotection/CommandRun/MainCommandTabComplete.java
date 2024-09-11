@@ -26,7 +26,7 @@ public class MainCommandTabComplete implements TabCompleter {
                 case "open" -> {
                     List<String> towns = new ArrayList<>();
                     for(var townData : MainData.townMarkData) {
-                        towns.add(townData.townName);
+                        towns.add(townData.getName());
                     }
                     return towns;
                 }

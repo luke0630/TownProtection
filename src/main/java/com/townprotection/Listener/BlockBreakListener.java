@@ -41,7 +41,7 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
             targetPos.startBlock = blockLoc;
             targetPos.endBlock = blockLoc;
 
-            if(!Selector.overlaps(town.rangeOfTown, targetPos)) {
+            if(!Selector.overlaps(town.getSelectorData(), targetPos)) {
             } else {
                 //町の中
                 var markData = Selector.getMarkDataFromLocation(town, blockLoc);
@@ -57,9 +57,17 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
                         return;
                     }
                 } else {
+                    if(player != null && TownProtection.IsTownAdmin(player, town)) {
+                        return;
+                    }
                     if(player != null && !TownProtection.IsTownAdmin(player, town)) {
                         player.sendMessage(TownProtection.message + toColor("&c&l町の変更は許可されません。"));
                         callback.run();
+                        return;
+                    }
+                    if(!town.allowActionList.contains(action)) {
+                        callback.run();
+                        return;
                     }
                 }
             }
@@ -158,6 +166,9 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
                     }
                     iterator.remove();
                 } else {
+                    if(townData.allowActionList.contains(ActionList.Action.TNT_EXPLOSION)) {
+                        continue;
+                    }
                     iterator.remove();
                 }
             } else {
@@ -198,7 +209,7 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
 
         TownData pistonTown = null;
         for(var town : MainData.townMarkData) {
-            if(Selector.overlaps(town.rangeOfTown, targetPos)) {
+            if(Selector.overlaps(town.getSelectorData(), targetPos)) {
                 pistonTown = town;
             }
         }

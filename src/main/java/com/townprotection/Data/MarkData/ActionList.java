@@ -12,7 +12,7 @@ public class ActionList {
 
         PLAYER_INTERACT(new ActionData("&c&lプレイヤーがチェストやかまどなどにアクセスする", Material.CHEST)),
 
-        PISTON_MOVE_BLOCK(new ActionData("&d&l保護外から保護内または保護内から保護害へ、ピストンでブロックを移動できるか否か", Material.PISTON)),
+        PISTON_MOVE_BLOCK(new ActionData("&d&l保護外から保護内または保護内から保護外へ、ピストンでブロックを移動できるか否か", Material.PISTON)),
 
         HANGING_BREAK(new ActionData("&c&l額縁や絵などの破壊", Material.PAINTING)),
         TNT_EXPLOSION(new ActionData("&c&lTNTによる地形の破壊", Material.TNT)),

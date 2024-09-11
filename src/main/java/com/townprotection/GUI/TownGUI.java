@@ -15,20 +15,27 @@ public class TownGUI {
 
     public static Inventory getTownEditor(Player player) {
         var townData = MainData.playerOpenGUI.get(player).targetTownData;
-        var guiName = "&c&l" + townData.townName + "&8&lの編集(町)";
+        var guiName = "&c&l" + townData.getName() + "&8&lの編集(町)";
         if(!TownProtection.IsTownAdmin(player, townData)) {
-            guiName = "&8&l" + townData.townName + "の詳細";
+            guiName = "&8&l" + townData.getName() + "の詳細";
         }
         var inv = getInv(9*3, guiName);
 
-        var townIcon = getItem(townData.townIcon, townData.townName);
+        var townIcon = getItem(townData.getIcon(), townData.getName());
+
+        var allowList = getItem(Material.LEVER, "&a&l許可行動を選択");
+        setLore(allowList, List.of(
+                "&c&l許可行動は、&f&l土地内でしてもよい行動を選択できます。",
+                "&6&l※チェストを開く...など"
+        ));
+
 
 
         inv.setItem(0, getItem(Material.FEATHER, "&c&l戻る"));
 
-        var townMayorItem = getPlayerHead(townData.townMayor);
+        var townMayorItem = getPlayerHead(townData.getOwner());
         setLore(townMayorItem, List.of(
-                "&c&l市長: " + Bukkit.getOfflinePlayer(townData.townMayor)
+                "&c&l市長: " + Bukkit.getOfflinePlayer(townData.getOwner()).getName()
         ));
         inv.setItem(9+7, townMayorItem);
 
@@ -41,17 +48,18 @@ public class TownGUI {
         if(TownProtection.IsTownAdmin(player, townData)) {
             inv.setItem(9+2, getItem(Material.OAK_LOG, "&c&l土地を管理"));
             inv.setItem(9+1, getItem(Material.SCULK_SENSOR, "&b&l演出を管理"));
-            if(player.getUniqueId().toString().equalsIgnoreCase(townData.townMayor.toString())) {
+            if(player.getUniqueId().toString().equalsIgnoreCase(townData.getOwner().toString())) {
                 setLore(townIcon, List.of(
                         "&c&lクリックしてアイコンを変更"
                 ));
-                var mayor = getItem(Material.PLAYER_HEAD, "&c&l市長: &f&l" + Bukkit.getOfflinePlayer(townData.townMayor).getName());
+                var mayor = getItem(Material.PLAYER_HEAD, "&c&l市長: &f&l" + Bukkit.getOfflinePlayer(townData.getOwner()).getName() );
                 setLore(mayor, List.of("&c&lクリックして市長を交代する"));
                 inv.setItem(9+7, mayor);
                 inv.setItem(9+6, getItem(Material.NAME_TAG, "&c&l名前を変更する"));
                 inv.setItem(9+8, getItem(Material.REDSTONE_LAMP, "&c&l町の管理者を追加する"));
                 inv.setItem(9*2, getItem(Material.BARRIER, "&c&lこの町を削除する"));
                 inv.setItem(9*2+4, getItem(Material.WOODEN_PICKAXE, "&6&l範囲を変更する"));
+                inv.setItem(9*2+2, allowList);
             }
         } else {
             inv.setItem(9+8, getItem(Material.REDSTONE_LAMP, "&c&l町の管理者の一覧"));
@@ -86,15 +94,15 @@ public class TownGUI {
         var data = MainData.playerOpenGUI.get(player);
         var inv = getInv(9*3, "&c&l確認画面 - 市長を変更");
         var nextMayorHead = getPlayerHead(data.nextMayor);
-        var currentMayorHead = getPlayerHead( data.targetTownData.townMayor );
+        var currentMayorHead = getPlayerHead( data.targetTownData.getOwner() );
 
         var ok = getItem(Material.REDSTONE, "&c&l変更する");
         var no = getItem(Material.BARRIER, "&c&l戻る");
 
         setLore(ok, List.of(
-                "&f&l市名: " + data.targetTownData.townName,
+                "&f&l市名: " + data.targetTownData.getName(),
                 "&f&lクリックすると、市長交代が行われます。",
-                "&c&l" + Bukkit.getOfflinePlayer(data.targetTownData.townMayor).getName() + "&f&l → &c&l" + Bukkit.getOfflinePlayer(data.nextMayor).getName()
+                "&c&l" + Bukkit.getOfflinePlayer(data.targetTownData.getOwner()).getName() + "&f&l → &c&l" + Bukkit.getOfflinePlayer(data.nextMayor).getName()
         ));
 
         inv.setItem(3, currentMayorHead);
@@ -120,7 +128,7 @@ public class TownGUI {
                 "&f&lクリックすると、町が削除されます(ブロックなどに変更はありません。)"
         ));
 
-        inv.setItem(4, getItem(townData.townIcon, townData.townName));
+        inv.setItem(4, getItem(townData.getIcon(), townData.getName()));
 
         inv.setItem(9+3, ok);
         inv.setItem(9+5, no);
@@ -138,7 +146,7 @@ public class TownGUI {
         var fromInv = getItem(Material.CHEST, "&6&lインベントリのアイテムからアイコンを指定");
         var fromList = getItem(Material.STONE, "&a&lブロック一覧からアイコンを指定");
 
-        inv.setItem(4, getItem(townData.townIcon, townData.townName));
+        inv.setItem(4, getItem(townData.getIcon(), townData.getName()));
 
         inv.setItem(0, getItem(Material.FEATHER, "&c&l戻る"));
         inv.setItem(9+3, fromList);
