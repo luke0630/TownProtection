@@ -146,8 +146,6 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
         }
         else
         if(action == LEFT_CLICK_BLOCK) {
-            player.sendMessage("ここにきた");
-
             var blockLoc = event.getClickedBlock().getLocation();
             Checker(player, blockLoc, BREAK_BLOCK, () -> event.setCancelled(true));
         }
