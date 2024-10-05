@@ -17,7 +17,7 @@ public class MainCommandTabComplete implements TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
         if(!command.getName().equalsIgnoreCase("townprotection")) return null;
         if (args.length == 1) {
-            List<String> completions = Arrays.asList("wand", "open", "show", "deselect");
+            List<String> completions = Arrays.asList("wand", "open", "show", "deselect", "open:current:town", "open:current:marked");
             return completions.stream()
                     .filter(option -> option.startsWith(args[0]))
                     .collect(Collectors.toList());

@@ -65,7 +65,7 @@ public class ShowRangeWhenEnter {
     public static void ShowTownAndMarked(Player player, TownData townData, boolean isShowDescription)  {
         ShowRange.ShowRangeWithBlock(player, townData.getSelectorData(), Material.GOLD_BLOCK, false);
         for(var marked : townData.selectorMarkData) {
-            ShowRange.ShowRangeWithBlock(player, marked.selectorData, Material.REDSTONE_BLOCK, false);
+            ShowRange.ShowRangeWithBlock(player, marked.getSelectorData(), Material.REDSTONE_BLOCK, false);
         }
         if(isShowDescription) {
             ShowActionBar(player, "&a" + townData.getName() + " の範囲を表示中 &f- &6金・町の範囲 &f/ &c赤・土地の範囲");

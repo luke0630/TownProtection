@@ -1,8 +1,10 @@
 package com.townprotection.Data;
 
+import com.townprotection.Data.ActionData.PlayerInteract;
 import com.townprotection.Data.MarkData.ActionList;
 import com.townprotection.Data.SelectorData.SelectorData;
 import org.bukkit.Material;
+import org.luke.takoyakiLibrary.TakoUtility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,32 @@ public abstract class DataAbstract {
     String name = "";
     Material icon;
     CreationDate creationDate;
+    PlayerInteract playerInteractData;
+    String denyMessage = TakoUtility.toColor("&c&lその行動は許可されていません。");
+    List<UUID> allowedPlayer = new ArrayList<>();
+
+    public PlayerInteract getPlayerInteractData() {
+        return playerInteractData;
+    }
+
+    public void setPlayerInteractData(PlayerInteract playerInteractData) {
+        this.playerInteractData = playerInteractData;
+    }
+
+    public String getDenyMessage() {
+        return denyMessage;
+    }
+
+    public void setDenyMessage(String denyMessage) {
+        this.denyMessage = denyMessage;
+    }
+    public List<UUID> getAllowedPlayer() {
+        return allowedPlayer;
+    }
+
+    public void setAllowedPlayer(List<UUID> allowedPlayer) {
+        this.allowedPlayer = allowedPlayer;
+    }
 
     public CreationDate getCreationDate() {
         return creationDate;

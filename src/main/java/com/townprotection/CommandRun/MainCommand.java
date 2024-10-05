@@ -47,7 +47,6 @@ public class MainCommand implements CommandExecutor {
             }
 
             switch (strings[0]) {
-                case "test" -> getManager().OpenListGUI(player, GuiManager.ListGUIPreset.TOWN_LIST);
                 case "show" -> Selector.ShowMode(player);
                 case "wand" -> GiveSelector.giveSelector(player);
                 case "deselect" -> {
@@ -75,12 +74,42 @@ public class MainCommand implements CommandExecutor {
                             var guiData = new GUIData();
                             guiData.targetTownData = townData;
                             playerOpenGUI.put(player, guiData);
-                            GuiManager.openGUI(player, GuiManager.GUi.TOWN_EDITOR);
+                            getManager().OpenGUI(player, GuiManager.GUi.TOWN_EDITOR);
                             return false;
                         }
                     }
                     player.sendMessage(toColor("&cその名前の町は存在しないため開けませんでした。"));
                     return false;
+                }
+                case "open:current:town" -> {
+                    if(!playerOpenGUI.containsKey(player)) {
+                        playerOpenGUI.put(player, new GUIData());
+                    }
+                    var currentTown = Selector.getTownFromLocation(player.getLocation());
+                    if(currentTown == null) {
+                        player.sendMessage(toColor("&c現在いる場所に町が存在しなかったため開けませんでした。"));
+                        return false;
+                    }
+                    playerOpenGUI.get(player).targetTownData = currentTown;
+                    getManager().OpenGUI(player, GuiManager.GUi.TOWN_EDITOR);
+                }
+                case "open:current:marked" -> {
+                    if(!playerOpenGUI.containsKey(player)) {
+                        playerOpenGUI.put(player, new GUIData());
+                    }
+                    var currentTown = Selector.getTownFromLocation(player.getLocation());
+                    if(currentTown == null) {
+                        player.sendMessage(toColor("&c現在いる場所に土地と町が存在しなかったため開けませんでした。"));
+                        return false;
+                    }
+                    var currentMarked = Selector.getMarkDataFromLocation(currentTown, player.getLocation());
+                    if(currentMarked == null) {
+                        player.sendMessage(toColor("&c現在いる場所に土地が存在しなかったため開けませんでした。町はあります。" + "町: " + currentTown.getName()));
+                        return false;
+                    }
+                    playerOpenGUI.get(player).targetTownData = currentTown;
+                    playerOpenGUI.get(player).targetTownMarkData = currentMarked;
+                    getManager().OpenGUI(player, GuiManager.GUi.MARK_DATA_EDITOR);
                 }
             }
 

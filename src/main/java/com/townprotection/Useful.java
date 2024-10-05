@@ -3,11 +3,10 @@ package com.townprotection;
 import com.townprotection.Data.DataAbstract;
 import com.townprotection.Data.GUIData.GUIData;
 import com.townprotection.Data.MainData;
+import com.townprotection.Data.MarkData.SelectorMarkData;
+import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.GUI.GuiManager;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -21,7 +20,7 @@ import java.util.*;
 
 import static com.townprotection.Data.MainData.playerOpenGUI;
 import static com.townprotection.Selector.Selector.actionBarSchedulers;
-import static com.townprotection.TownProtection.getManager;
+import static com.townprotection.TownProtection.*;
 
 public class Useful {
     public static String toColor(String message) {
@@ -107,7 +106,8 @@ public class Useful {
     }
 
     public static ItemStack getPlayerHead(UUID uuid) {
-        ItemStack skull = getItem(Material.PLAYER_HEAD,"&f&l"+ Bukkit.getOfflinePlayer(uuid).getName());
+        OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+        ItemStack skull = getItem(Material.PLAYER_HEAD,"&f&l"+ player.getName());
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
         skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(uuid));
         skull.setItemMeta(skullMeta);
@@ -138,6 +138,55 @@ public class Useful {
         return new DataAbstract.CreationDate(year,month,day);
     }
 
+    // ======= Marked / Town - GUI Systems ======
+    public static ItemStack getTeleportIcon() {
+        var teleport = getItem(Material.COMPASS, "この場所にテレポートする");
+        setLore(teleport, List.of(
+                "&c&lクリックしてテレポートする"
+        ));
+        return teleport;
+    }
+    public static ItemStack getAllowListIcon() {
+        var allowList = getItem(Material.LEVER, "&a&l許可行動を選択");
+        return allowList;
+    }
+    public static ItemStack getTownIcon(TownData data) {
+        var itemStack = getItem(data.getIcon(), data.getName());
+
+        int year = data.getCreationDate().getYear();
+        int month = data.getCreationDate().getMonth();
+        int day = data.getCreationDate().getDay();
+
+        setLore(itemStack, List.of(
+                "&f-------------------------------------------",
+                "&a&l町長: &f&l" + Bukkit.getOfflinePlayer(data.getOwner()).getName(),
+                "&6&l総土地数: &6" + (data).selectorMarkData.size() + "個",
+                "&f&l作成年月日: &f" + year + "年 " + month + "月 " + day + "日"
+        ));
+        return itemStack;
+    }
+    public static ItemStack getMarkedIcon(SelectorMarkData data) {
+        var item = getItem(Material.OAK_LOG, data.getName());
+        var owner = Bukkit.getOfflinePlayer(data.getOwner());
+
+        int year = data.getCreationDate().getYear();
+        int month = data.getCreationDate().getMonth();
+        int day = data.getCreationDate().getDay();
+        setLore(item, List.of(
+                "&c&lオーナー: &f&l" + owner.getName(),
+                "&f&l作成年月日: &f" + year + "年 " + month + "月 " + day + "日"
+        ));
+        return item;
+    }
+    public static ItemStack getAllowedPlayerIcon(DataAbstract data) {
+        var item = TakoUtility.getItem(Material.REDSTONE, "&b&l許可者リスト");
+        TakoUtility.setLore(item, List.of(
+                "&2許可者数: " + data.getAllowedPlayer().size() + "人",
+                "&6※許可者には、保護が適用されなくなります。ただし、その町や土地の設定の変更はできません。",
+                "&cクリックして許可者を編集"
+        ));
+        return item;
+    }
 
     // ======= Filter Controller Systems =======
     public static void clickFilterFunction(InventoryClickEvent event, GuiManager.ListGUIPreset gui) {
@@ -173,6 +222,28 @@ public class Useful {
                 "&6クリックしてフィルターを変更する"
         ));
         TakoUtility.setLore(filterItem, filters);
+        return filterItem;
+    }
+
+    public static ItemStack getSwitchAllowedCreateMarkedItem(Player player) {
+        if(!playerOpenGUI.containsKey(player)) {
+            playerOpenGUI.put(player, new GUIData());
+        }
+        var filterItem = TakoUtility.getItem(Material.LIGHTNING_ROD, "&aこの町の土地の追加の権限設定");
+        List<String> modes = new ArrayList<>();
+        for(var mode : MainData.CreateMarkedMode.values()) {
+            String resultFilter = mode.getString();
+            if(playerOpenGUI.get(player).targetTownData.createMarkedMode == mode) {
+                resultFilter = toColor("&f・" + resultFilter + " ←");
+            }
+            modes.add(toColor("&8" + resultFilter));
+        }
+        modes.addAll(List.of(
+                "&f-----------------",
+                "&6クリックして変更する",
+                "&cこの町に土地を追加できる人の設定ができます。"
+        ));
+        TakoUtility.setLore(filterItem, modes);
         return filterItem;
     }
 
@@ -233,5 +304,17 @@ public class Useful {
             }
         }
         return addingList;
+    }
+
+    public static boolean isCanCreateMarked(Player player, TownData townData) {
+        var createMarkedMode = townData.createMarkedMode;
+        if(createMarkedMode == MainData.CreateMarkedMode.ALL) return true;
+        if(createMarkedMode == MainData.CreateMarkedMode.OWNER_ADMIN) {
+            if(IsTownAdmin(player, townData)) return true;
+        }
+        if(createMarkedMode == MainData.CreateMarkedMode.OWNER)  {
+            if(IsTopAdmin(player, townData)) return true;
+        }
+        return false;
     }
 }

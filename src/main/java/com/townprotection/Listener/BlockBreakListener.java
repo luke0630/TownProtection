@@ -8,6 +8,7 @@ import com.townprotection.Selector.Selector;
 import com.townprotection.TownProtection;
 import com.townprotection.Useful;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -26,51 +27,39 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.luke.takoyakiLibrary.TakoUtility;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
-import static com.townprotection.Useful.toColor;
 import static org.bukkit.event.block.Action.LEFT_CLICK_BLOCK;
 
 public class BlockBreakListener implements org.bukkit.event.Listener {
 
-    void Checker(Player player,Location blockLoc, ActionList.Action action, Runnable callback) {
-        for(var town : MainData.townMarkData) {
-            var targetPos = new SelectorData();
-            targetPos.startBlock = blockLoc;
-            targetPos.endBlock = blockLoc;
-
-            if(!Selector.overlaps(town.getSelectorData(), targetPos)) {
-            } else {
-                //町の中
-                var markData = Selector.getMarkDataFromLocation(town, blockLoc);
-                if(markData != null) {
-                    if(markData.allowActionList.contains(action)) return; //アクションが許可されていたらreturnしてcallbackさせない
-                    if(player == null) {
-                        callback.run();
-                        return;
-                    }
-                    if(!TownProtection.IsMarkedAdmin(player, markData)) {
-                        player.sendMessage(TownProtection.message + toColor("&c&lこの行動は許可されていません。"));
-                        callback.run();
-                        return;
-                    }
-                } else {
-                    if(player != null && TownProtection.IsTownAdmin(player, town)) {
-                        return;
-                    }
-                    if(player != null && !TownProtection.IsTownAdmin(player, town)) {
-                        player.sendMessage(TownProtection.message + toColor("&c&l町の変更は許可されません。"));
-                        callback.run();
-                        return;
-                    }
-                    if(!town.allowActionList.contains(action)) {
-                        callback.run();
-                        return;
+    void Checker(Player player, Location blockLoc, ActionList.Action action, Runnable callback) {
+        var currentData = Selector.getDataFromLocation(blockLoc);
+        if (currentData != null) {
+            try {
+                for(Map.Entry<Material, Boolean> entry : currentData.getPlayerInteractData().getTargets().entrySet()) {
+                    if(entry.getKey().toString().contains(blockLoc.getBlock().getType().toString()) || blockLoc.getBlock().getType().toString().contains(entry.getKey().toString())) {
+                        if(!entry.getValue()) return;
                     }
                 }
+            } catch (Exception e) {}
+
+            if(action != ActionList.Action.PLAYER_INTERACT) {
+                if(currentData.getAllowActionList().contains(action)) return; //アクションが許可されていたらreturnしてcallbackさせない
             }
+            if(player != null) {
+                if(TownProtection.IsAdmin(player, currentData)) return;
+                if(currentData.getAllowedPlayer().contains(player.getUniqueId())) return;
+
+                player.sendMessage(TakoUtility.toColor(currentData.getDenyMessage())); //メッセージを送信する
+            }
+
+            //ここまでreturnされなかったらcancel()する
+            callback.run();
         }
     }
 
@@ -87,14 +76,15 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
     @EventHandler
     public void onDamageEntity(EntityDamageByEntityEvent event) {
         var damager = event.getDamager(); //与えた人
-        var target = event.getEntity().getLocation(); //ダメージを与えられた人
+        var targetEntity = event.getEntity(); //与えられた人
+        var target = targetEntity.getLocation(); //ダメージを与えられた人
 
         if(damager instanceof Player player) {
-            if(target instanceof Player) {
+            if(targetEntity instanceof Player) {
                 Checker(player, target, PLAYER_TO_PLAYER_DAMAGE,  () -> event.setCancelled(true));
-                return;
+            } else {
+                Checker(player, target, DAMAGE_ENTITY_BY_ENTITY,  () -> event.setCancelled(true));
             }
-            Checker(player, target, DAMAGE_ENTITY_BY_ENTITY,  () -> event.setCancelled(true));
         } else if(damager.getType() == EntityType.PRIMED_TNT) {
             Checker(null, target, DAMAGE_ENTITY_BY_ENTITY,  () -> event.setCancelled(true));
         }
@@ -141,17 +131,30 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
         if(Selector.IsSelectorTool(player)) return;
         if(action == Action.RIGHT_CLICK_BLOCK) {
             var blockLoc = event.getClickedBlock().getLocation();
+
+            try {
+                var currentData = Selector.getDataFromLocation(blockLoc);
+                for(Map.Entry<Material, Boolean> entry : currentData.getPlayerInteractData().getTargets().entrySet()) {
+                    if(entry.getKey().toString().contains(blockLoc.getBlock().getType().toString()) || blockLoc.getBlock().getType().toString().contains(entry.getKey().toString())) {
+                        Checker(player, blockLoc, PLAYER_INTERACT, () -> event.setCancelled(true));
+                    }
+                }
+                return;
+            } catch (Exception e) {}
+
             Checker(player, blockLoc, PLACE_BLOCK, () -> event.setCancelled(true));
         }
         else
         if(action == LEFT_CLICK_BLOCK) {
+            player.sendMessage("ここにきた");
+
             var blockLoc = event.getClickedBlock().getLocation();
             Checker(player, blockLoc, BREAK_BLOCK, () -> event.setCancelled(true));
         }
     }
 
     @EventHandler
-    public void onExplostionTNT(EntityExplodeEvent event) {
+    public void onExplosionTNT(EntityExplodeEvent event) {
         Iterator<Block> iterator = event.blockList().iterator();
 
         while (iterator.hasNext()) {
@@ -217,8 +220,8 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
         SelectorData pistonSelector = null;
         if(pistonTown != null) {
             for(var mark : pistonTown.selectorMarkData) {
-                if(Selector.overlaps(mark.selectorData, targetPos)) {
-                    pistonSelector = mark.selectorData;
+                if(Selector.overlaps(mark.getSelectorData(), targetPos)) {
+                    pistonSelector = mark.getSelectorData();
                 }
             }
         }
@@ -269,19 +272,6 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
                     isTargetBlocksOutOfMarked = true;
                     break;
                 }
-
-                /*var targetTown = Selector.getTownFromLocation(targets.getLocation());
-                if(targetTown == null) {
-                    break;
-                } else {
-                    var targetMark = Selector.getMarkDataFromLocation(targetTown, targets.getLocation());
-                    if(targetMark == null) {
-                        isTargetBlocksOutOfMarked = true;
-                        break;
-                    }
-                }*/
-
-
                 if(!Selector.overlaps(pistonSelector, pos)) {
                     isTargetBlocksOutOfMarked = true;
                     break;
@@ -295,7 +285,7 @@ public class BlockBreakListener implements org.bukkit.event.Listener {
                     var pos = new SelectorData();
                     pos.startBlock = blocks.getLocation();
                     pos.endBlock = blocks.getLocation();
-                    if(Selector.overlaps(marked.selectorData, pos)) {
+                    if(Selector.overlaps(marked.getSelectorData(), pos)) {
                         isTargetBlocksOutOfMarked = true;
                         break;
                     }

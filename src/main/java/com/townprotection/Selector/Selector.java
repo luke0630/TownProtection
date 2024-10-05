@@ -1,5 +1,6 @@
 package com.townprotection.Selector;
 
+import com.townprotection.Data.DataAbstract;
 import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.Data.SelectorData.SelectorData;
@@ -298,12 +299,22 @@ public class Selector {
             var pos = new SelectorData();
             pos.startBlock = loc;
             pos.endBlock = loc;
-            if(overlaps(data.selectorData, pos)) {
+            if(overlaps(data.getSelectorData(), pos)) {
                 return data;
             }
         }
         return null;
     }
+    public static DataAbstract getDataFromLocation(Location loc) {
+        TownData townData = getTownFromLocation(loc);
+        if(townData != null) {
+            SelectorMarkData markData =  getMarkDataFromLocation(townData, loc);
+            if(markData != null) return markData;
+            return townData;
+        }
+        return null;
+    }
+
 
 
     public static void ApplyChangeSelector(Player player) {
@@ -320,7 +331,7 @@ public class Selector {
                 Save();
             } else if(previousData.getMarkData() != null) { //土地の編集だった場合
                 var newMarkedData = previousData.getMarkData();
-                newMarkedData.selectorData = playerSelectData.get(player).clone();
+                newMarkedData.setSelectorData(playerSelectData.get(player).clone());
                 previousData.setMarkData(newMarkedData);
                 Save();
             }
@@ -401,16 +412,16 @@ public class Selector {
         if(selectorMarkData == null) {
             chooseData = townData.getSelectorData().clone();
         } else {
-            chooseData = selectorMarkData.selectorData.clone();
+            chooseData = selectorMarkData.getSelectorData().clone();
             for(var showSelectorData : townData.selectorMarkData) {
-                ShowRange.ShowRangeWithBlock(player, showSelectorData.selectorData, Material.RED_WOOL, false);
+                ShowRange.ShowRangeWithBlock(player, showSelectorData.getSelectorData(), Material.RED_WOOL, false);
             }
         }
         playerSelectData.put(player, chooseData);
         getRange(player, chooseData, Color.ORANGE);
 
         for(var showSelectorData : townData.selectorMarkData) {
-            ShowRange.ShowRangeWithBlock(player, showSelectorData.selectorData, Material.RED_WOOL, false);
+            ShowRange.ShowRangeWithBlock(player, showSelectorData.getSelectorData(), Material.RED_WOOL, false);
         }
 
         ShowRange.ShowRangeWithBlock(player, chooseData, Material.GOLD_BLOCK, false);
@@ -445,7 +456,7 @@ public class Selector {
 
                 for(var showSelectorData : townData.selectorMarkData) {
                     if(changeData.markData != null && showSelectorData.equals(changeData.getMarkData())) continue;
-                    ShowRange.ShowRangeWithBlock(player, showSelectorData.selectorData, Material.RED_WOOL, false);
+                    ShowRange.ShowRangeWithBlock(player, showSelectorData.getSelectorData(), Material.RED_WOOL, false);
                 }
                 ShowRange.ShowRangeWithBlock(player, chooseData, Material.GOLD_BLOCK, false);
                 CanApply(player);
@@ -458,8 +469,8 @@ public class Selector {
         var changeData = changeSelectorDataPlayer.get(player);
         if(changeData.markData != null) {
             for(var markedData : changeData.getTownData().selectorMarkData) {
-                if(changeData.markData.selectorData.equals(markedData.selectorData)) continue;
-                if(overlaps(playerSelectData.get(player), markedData.selectorData)) {
+                if(changeData.markData.getSelectorData().equals(markedData.getSelectorData())) continue;
+                if(overlaps(playerSelectData.get(player), markedData.getSelectorData())) {
                     player.sendMessage(toColor("&cほかの土地に重なっています！"));
                     isTrue = false;
                 }
@@ -478,7 +489,7 @@ public class Selector {
                 }
             }
             for(var marked : changeData.getTownData().selectorMarkData) {
-                if(!isRangeInRange(playerSelectData.get(player), marked.selectorData)) {
+                if(!isRangeInRange(playerSelectData.get(player), marked.getSelectorData())) {
                     player.sendMessage(toColor("&c町の範囲から町の土地が飛び出してしまっています！町の土地が収まるようにサイズを変更してください。"));
                     isTrue = false;
                     break;

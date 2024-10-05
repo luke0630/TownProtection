@@ -1,27 +1,32 @@
 package com.townprotection;
 
-import com.townprotection.AfterGUI.Action.List_Action;
-import com.townprotection.AfterGUI.Action.List_CurrentActions;
-import com.townprotection.AfterGUI.Manager.List_AddManager;
-import com.townprotection.AfterGUI.Manager.List_CurrentManager;
-import com.townprotection.AfterGUI.SetChangedSelectorDataGUI;
-import com.townprotection.AfterGUI.Town.Effect.List_TownEditor_AddEffect;
-import com.townprotection.AfterGUI.Town.Effect.List_TownEditor_CurrentEffect;
-import com.townprotection.AfterGUI.Town.Effect.TownEditor_EffectEditor;
-import com.townprotection.AfterGUI.Town.*;
-import com.townprotection.AfterGUI.Town.Marked.Marked_Data_Editor;
-import com.townprotection.AfterGUI.Town.Marked.Marked_Delete;
-import com.townprotection.AfterGUI.Town.Marked.Marked_List;
-import com.townprotection.AfterGUI.Town.Marked.TownEditor_BlockIconList;
 import com.townprotection.CommandRun.MainCommand;
 import com.townprotection.CommandRun.MainCommandTabComplete;
+import com.townprotection.Data.DataAbstract;
 import com.townprotection.Data.MarkData.SelectorMarkData;
 import com.townprotection.Data.MarkData.TownData;
 import com.townprotection.Data.SelectorData.SelectorData;
+import com.townprotection.GUI.Action.ActionEditor.PlayerInteractGUI;
+import com.townprotection.GUI.Action.List_Action;
+import com.townprotection.GUI.Action.List_CurrentActions;
+import com.townprotection.GUI.AllowedPlayer.List_AddAllowedPlayer;
+import com.townprotection.GUI.AllowedPlayer.List_CurrentAllowedPlayer;
+import com.townprotection.GUI.ChangeOwner.ConfirmMayor;
+import com.townprotection.GUI.ChangeOwner.SelectNextMayor;
 import com.townprotection.GUI.GuiManager;
+import com.townprotection.GUI.Manager.List_AddManager;
+import com.townprotection.GUI.Manager.List_CurrentManager;
+import com.townprotection.GUI.SetChangedSelectorDataGUI;
+import com.townprotection.GUI.Town.Effect.List_TownEditor_AddEffect;
+import com.townprotection.GUI.Town.Effect.List_TownEditor_CurrentEffect;
+import com.townprotection.GUI.Town.Effect.TownEditor_EffectEditor;
+import com.townprotection.GUI.Town.*;
+import com.townprotection.GUI.Town.Marked.Marked_Data_Editor;
+import com.townprotection.GUI.Town.Marked.Marked_Delete;
+import com.townprotection.GUI.Town.Marked.Marked_List;
+import com.townprotection.GUI.Town.Marked.TownEditor_BlockIconList;
 import com.townprotection.Listener.BlockBreakListener;
 import com.townprotection.Listener.CallBackListener;
-import com.townprotection.Listener.GUIListener.MainGUIListener;
 import com.townprotection.Listener.Listener;
 import com.townprotection.PlaceholderAPISystem.TownProtectionExpansion;
 import com.townprotection.Range.ShowRange;
@@ -29,12 +34,12 @@ import com.townprotection.Range.ShowRangeWhenEnter;
 import com.townprotection.Selector.Selector;
 import com.townprotection.System.SaveLoad;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.luke.takoyakiLibrary.TakoUtility;
 import org.luke.yakisobaGUILib.YakisobaGUIManager;
 
 import java.io.File;
@@ -78,8 +83,6 @@ public final class TownProtection extends JavaPlugin {
                 new Marked_List(),
                 new Marked_Data_Editor(),
                 new Marked_Delete(),
-                new List_TownEditor_SelectMayor(),
-                new TownEditor_ChangeMayor(),
                 new List_TownManager(),
                 new List_TownEditor_AddManager(),
                 new TownEditor_ModeSelect(),
@@ -89,7 +92,12 @@ public final class TownProtection extends JavaPlugin {
                 new List_CurrentActions(),
                 new List_Action(),
                 new List_AddManager(),
-                new List_CurrentManager()
+                new List_CurrentManager(),
+                new List_CurrentAllowedPlayer(),
+                new List_AddAllowedPlayer(),
+                new ConfirmMayor(),
+                new SelectNextMayor(),
+                new PlayerInteractGUI()
         ));
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
@@ -113,7 +121,6 @@ public final class TownProtection extends JavaPlugin {
         org.bukkit.event.Listener[] listeners = {
                 new Listener(),
                 new BlockBreakListener(),
-                new MainGUIListener(),
                 new CallBackListener()
         };
 
@@ -211,12 +218,22 @@ public final class TownProtection extends JavaPlugin {
     }
 
 
+    public static boolean IsTopAdmin(Player player, DataAbstract dataAbstract) {
+        if(player.isOp() || dataAbstract.getOwner().toString().equals(player.getUniqueId().toString())) return true;
+        return false;
+    }
+
+    public static boolean IsAdmin(Player player, DataAbstract dataAbstract) {
+        if(player.isOp() || dataAbstract.getOwner().toString().equals(player.getUniqueId().toString()) || dataAbstract.getManager().contains(player.getUniqueId())) return true;
+        return false;
+    }
+
     public static boolean IsTownAdmin(Player player, TownData town) {
         if (player.isOp() || town.getOwner().toString().equalsIgnoreCase(player.getUniqueId().toString()) || town.getManager().contains(player.getUniqueId())) return true;
         return false;
     }
     public static boolean IsMarkedAdmin(Player player, SelectorMarkData markData) {
-        if(player.isOp() || markData.getOwner().toString().equalsIgnoreCase(player.getUniqueId().toString()) || markData.manager.contains(player.getUniqueId())) return true;
+        if(player.isOp() || markData.getOwner().toString().equalsIgnoreCase(player.getUniqueId().toString()) || markData.getManager().contains(player.getUniqueId())) return true;
         return false;
     }
 
@@ -237,16 +254,19 @@ public final class TownProtection extends JavaPlugin {
         return false;
     }
 
-    public static void TeleportSelectorData(Player player, SelectorData data) {
-        if(player.getGameMode() == GameMode.SPECTATOR) {
-            Selector.getRange(player, data, Color.ORANGE);
-            player.sendMessage(message + "テレポートしました。");
-            var cloneData = data.clone();
-            cloneData.startBlock.setY(player.getY());
-            player.teleport(cloneData.startBlock);
-        } else {
-            player.sendMessage(message + toColor("&c&lスペクテイターモードではないためテレポート出来ませんでした。"));
+    public static void TeleportSelectorData(Player player, DataAbstract dataAbstract) {
+        SelectorData data = dataAbstract.getSelectorData();
+
+        Block highestBlock = data.startBlock.getWorld().getHighestBlockAt(data.startBlock);
+        var resultLocation = highestBlock.getLocation();
+        resultLocation.add(0.5, 1, 0.5); //X と Zに0.5ずつ追加することでブロックの中央を求める
+        player.teleport(resultLocation);
+
+        String type = "町";
+        if(dataAbstract instanceof SelectorMarkData) {
+            type = "土地";
         }
+        player.sendMessage(TakoUtility.toColor(message + "&fテレポートしました。 : &6" + dataAbstract.getName() + "&f(&c" + type + "&f)"));
     }
 
 }

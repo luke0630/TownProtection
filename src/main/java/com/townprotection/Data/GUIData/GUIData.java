@@ -15,14 +15,13 @@ import java.util.UUID;
 
 public class GUIData implements Cloneable{
     public GuiManager.GUi gui;
-    public List<ActionList.Action> targetActionList = new ArrayList<>();
     public List<UUID> targetManagerList = new ArrayList<>(); //市長よりもえらくない町の権限を持った人
     public GuiManager.GUi backGUI = GuiManager.GUi.TOWN_EDITOR;
-    public String guiTitle = "";
     public TownData targetTownData;
     public DataAbstract targetData;
     public SelectorMarkData targetTownMarkData;
     public AbstractEffect targetEffectData;
+    public ActionList.Action targetActionData;
 
     public MainData.Filter currentFilter = MainData.Filter.LATEST;
 

@@ -33,4 +33,21 @@ public class MainData {
             return this.text;
         }
     }
+
+    public enum CreateMarkedMode {
+        ALL("全員"),
+        OWNER_ADMIN("オーナーと管理者"),
+        OWNER("オーナーのみ"),
+        ;
+
+        private final String text;
+
+        private CreateMarkedMode(final String text) {
+            this.text = text;
+        }
+
+        public String getString() {
+            return this.text;
+        }
+    }
 }
